@@ -1,0 +1,117 @@
+/*
+ * This file is part of gspell, a spell-checking library.
+ *
+ * Copyright 2017 - Sébastien Wilmet
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, see <http://www.gnu.org/licenses/>.
+ */
+#pragma once
+
+#ifndef GSPELL_VERSION_H
+#define GSPELL_VERSION_H
+
+#if !defined (GSPELL_H_INSIDE) && !defined (GSPELL_COMPILATION)
+#error "Only <gspell/gspell.h> can be included directly."
+#endif
+
+#include <glib.h>
+
+G_BEGIN_DECLS
+
+#ifndef _GSPELL_EXTERN
+#define _GSPELL_EXTERN extern
+#endif
+
+#define GSPELL_AVAILABLE_IN_ALL _GSPELL_EXTERN
+#define GSPELL_AVAILABLE_IN_1_2 _GSPELL_EXTERN
+#define GSPELL_AVAILABLE_IN_1_4 _GSPELL_EXTERN
+#define GSPELL_AVAILABLE_IN_1_6 _GSPELL_EXTERN
+
+/**
+ * SECTION:gspell-version
+ * @short_description: gspell version checking
+ *
+ * gspell provides macros to check the version of the library
+ * at compile-time
+ */
+
+/**
+ * GSPELL_MAJOR_VERSION:
+ *
+ * gspell major version component (e.g. 1 if %GSPELL_VERSION is 1.2.3)
+ */
+#define GSPELL_MAJOR_VERSION (@MAJOR_VERSION@)
+
+/**
+ * GSPELL_MINOR_VERSION:
+ *
+ * gspell minor version component (e.g. 2 if %GSPELL_VERSION is 1.2.3)
+ */
+#define GSPELL_MINOR_VERSION (@MINOR_VERSION@)
+
+/**
+ * GSPELL_MICRO_VERSION:
+ *
+ * gspell micro version component (e.g. 3 if %GSPELL_VERSION is 1.2.3)
+ */
+#define GSPELL_MICRO_VERSION (@MICRO_VERSION@)
+
+/**
+ * GSPELL_VERSION
+ *
+ * gspell version.
+ */
+#define GSPELL_VERSION (@VERSION@)
+
+/**
+ * GSPELL_VERSION_S:
+ *
+ * gspell version, encoded as a string, useful for printing and
+ * concatenation.
+ */
+#define GSPELL_VERSION_S "@VERSION@"
+
+#define GSPELL_ENCODE_VERSION(major,minor,micro) \
+        ((major) << 24 | (minor) << 16 | (micro) << 8)
+
+/**
+ * GSPELL_VERSION_HEX:
+ *
+ * gspell version, encoded as an hexadecimal number, useful for
+ * integer comparisons.
+ */
+#define GSPELL_VERSION_HEX \
+        (GSPELL_ENCODE_VERSION (GSPELL_MAJOR_VERSION, GSPELL_MINOR_VERSION, GSPELL_MICRO_VERSION))
+
+/**
+ * GSPELL_CHECK_VERSION:
+ * @major: required major version
+ * @minor: required minor version
+ * @micro: required micro version
+ *
+ * Compile-time version checking. Evaluates to %TRUE if the version
+ * of gspell is greater than the required one.
+ */
+#define GSPELL_CHECK_VERSION(major,minor,micro)   \
+        (GSPELL_MAJOR_VERSION > (major) || \
+         (GSPELL_MAJOR_VERSION == (major) && GSPELL_MINOR_VERSION > (minor)) || \
+         (GSPELL_MAJOR_VERSION == (major) && GSPELL_MINOR_VERSION == (minor) && \
+          GSPELL_MICRO_VERSION >= (micro)))
+
+
+G_END_DECLS
+
+#endif /* GSPELL_VERSION_H */
+
+/* ex:set ts=8 noet: */

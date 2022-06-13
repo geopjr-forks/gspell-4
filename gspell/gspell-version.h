@@ -42,3 +42,4 @@ G_END_DECLS
 #endif /* GSPELL_VERSION_H */
 
 /* ex:set ts=8 noet: */
+

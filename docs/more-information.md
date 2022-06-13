@@ -37,10 +37,10 @@ Installation
 Simple install procedure from a tarball:
 
 ```
-$ ./configure
-$ make
+$ meson build
+$ ninja compile -C build
 [ Become root if necessary ]
-$ make install
+$ ninja install -C build
 ```
 
 See the file 'INSTALL' for more detailed information.
