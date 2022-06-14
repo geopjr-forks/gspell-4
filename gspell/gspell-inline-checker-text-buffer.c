@@ -881,9 +881,9 @@ suggestion_activated_cb (const gchar *suggested_word,
 
 void
 _gspell_inline_checker_text_buffer_populate_popup (GspellInlineCheckerTextBuffer *spell,
-						   GtkMenu                       *menu)
+						   GMenu                       *menu)
 {
-	GtkMenuItem *menu_item;
+	GMenuItem *menu_item;
 	GtkTextIter start;
 	GtkTextIter end;
 	gchar *misspelled_word;
@@ -912,8 +912,10 @@ _gspell_inline_checker_text_buffer_populate_popup (GspellInlineCheckerTextBuffer
 								    suggestion_activated_cb,
 								    spell);
 
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu),
-				GTK_WIDGET (menu_item));
+	/* gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), */
+	/* 			GTK_WIDGET (menu_item)); */
+
+	g_menu_append_item (menu, menu_item);
 
 	g_free (misspelled_word);
 }
@@ -997,30 +999,30 @@ language_notify_cb (GspellChecker                 *checker,
  * Here, we do NOT move the cursor to the location of the clicked-upon word
  * since that prevents the use of edit functions on the context menu.
  */
-static gboolean
-button_press_event_cb (GtkTextView                   *view,
-		       GdkEventButton                *event,
-		       GspellInlineCheckerTextBuffer *spell)
-{
-	if (event->button == GDK_BUTTON_SECONDARY)
-	{
-		GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
-		GtkTextIter iter;
-		gint x;
-		gint y;
+/* static gboolean */
+/* button_press_event_cb (GtkTextView                   *view, */
+/* 		       GdkEventButton                *event, */
+/* 		       GspellInlineCheckerTextBuffer *spell) */
+/* { */
+/* 	if (event->button == GDK_BUTTON_SECONDARY) */
+/* 	{ */
+/* 		GtkTextBuffer *buffer = gtk_text_view_get_buffer (view); */
+/* 		GtkTextIter iter; */
+/* 		gint x; */
+/* 		gint y; */
 
-		gtk_text_view_window_to_buffer_coords (view,
-						       GTK_TEXT_WINDOW_TEXT,
-						       event->x, event->y,
-						       &x, &y);
+/* 		gtk_text_view_window_to_buffer_coords (view, */
+/* 						       GTK_TEXT_WINDOW_TEXT, */
+/* 						       event->x, event->y, */
+/* 						       &x, &y); */
 
-		gtk_text_view_get_iter_at_location (view, &iter, x, y);
+/* 		gtk_text_view_get_iter_at_location (view, &iter, x, y); */
 
-		gtk_text_buffer_move_mark (buffer, spell->mark_click, &iter);
-	}
+/* 		gtk_text_buffer_move_mark (buffer, spell->mark_click, &iter); */
+/* 	} */
 
-	return GDK_EVENT_PROPAGATE;
-}
+/* 	return GDK_EVENT_PROPAGATE; */
+/* } */
 
 /* Move the insert mark before popping up the menu, otherwise it
  * will contain the wrong set of suggestions.
@@ -1412,23 +1414,23 @@ _gspell_inline_checker_text_buffer_attach_view (GspellInlineCheckerTextBuffer *s
 	g_return_if_fail (gtk_text_view_get_buffer (view) == spell->buffer);
 	g_return_if_fail (g_slist_find (spell->views, view) == NULL);
 
-	g_signal_connect_object (view,
-				 "button-press-event",
-				 G_CALLBACK (button_press_event_cb),
-				 spell,
-				 0);
+	/* g_signal_connect_object (view, */
+	/* 			 "button-press-event", */
+	/* 			 G_CALLBACK (button_press_event_cb), */
+	/* 			 spell, */
+	/* 			 0); */
 
-	g_signal_connect_object (view,
-				 "popup-menu",
-				 G_CALLBACK (popup_menu_cb),
-				 spell,
-				 0);
+	/* g_signal_connect_object (view, */
+	/* 			 "popup-menu", */
+	/* 			 G_CALLBACK (popup_menu_cb), */
+	/* 			 spell, */
+	/* 			 0); */
 
-	g_signal_connect_object (view,
-				 "draw",
-				 G_CALLBACK (draw_cb),
-				 spell,
-				 0);
+	/* g_signal_connect_object (view, */
+	/* 			 "draw", */
+	/* 			 G_CALLBACK (draw_cb), */
+	/* 			 spell, */
+	/* 			 0); */
 
 	spell->views = g_slist_prepend (spell->views, view);
 

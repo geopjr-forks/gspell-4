@@ -180,23 +180,67 @@ get_current_language (GspellTextView *gspell_view)
 	return gspell_checker_get_language (checker);
 }
 
+/* static void */
+/* populate_popup_cb (GtkTextView    *gtk_view, */
+/* 		   GtkWidget      *popup, */
+/* 		   GspellTextView *gspell_view) */
+/* { */
+/* 	GspellTextViewPrivate *priv; */
+/* 	GtkMenu *menu; */
+/* 	GtkWidget *menu_item; */
+
+/* 	priv = gspell_text_view_get_instance_private (gspell_view); */
+
+/* 	if (!GTK_IS_MENU (popup)) */
+/* 	{ */
+/* 		return; */
+/* 	} */
+
+/* 	menu = GTK_MENU (popup); */
+
+/* 	if (!priv->enable_language_menu && */
+/* 	    priv->inline_checker == NULL) */
+/* 	{ */
+/* 		return; */
+/* 	} */
+
+	/* Prepend separator */
+/* 	menu_item = gtk_separator_menu_item_new (); */
+/* 	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item); */
+/* 	gtk_widget_show (menu_item); */
+
+/* 	if (priv->enable_language_menu) */
+/* 	{ */
+/* 		const GspellLanguage *current_language; */
+/* 		GtkMenuItem *lang_menu_item; */
+
+/* 		current_language = get_current_language (gspell_view); */
+/* 		lang_menu_item = _gspell_context_menu_get_language_menu_item (current_language, */
+/* 									      language_activated_cb, */
+/* 									      gspell_view); */
+
+		/* Prepend language sub-menu */
+/* 		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), */
+/* 					GTK_WIDGET (lang_menu_item)); */
+/* 	} */
+
+/* 	if (priv->inline_checker != NULL) */
+/* 	{ */
+		/* Prepend suggestions */
+/* 		_gspell_inline_checker_text_buffer_populate_popup (priv->inline_checker, menu); */
+/* 	} */
+/* } */
+
 static void
-populate_popup_cb (GtkTextView    *gtk_view,
-		   GtkWidget      *popup,
-		   GspellTextView *gspell_view)
+set_extra_menu (GspellTextView *gspell_view,
+	  	GtkTextView    *gtk_view)
 {
 	GspellTextViewPrivate *priv;
-	GtkMenu *menu;
-	GtkWidget *menu_item;
+	GMenu *menu;
 
 	priv = gspell_text_view_get_instance_private (gspell_view);
 
-	if (!GTK_IS_MENU (popup))
-	{
-		return;
-	}
-
-	menu = GTK_MENU (popup);
+	menu = g_menu_new ();
 
 	if (!priv->enable_language_menu &&
 	    priv->inline_checker == NULL)
@@ -204,15 +248,15 @@ populate_popup_cb (GtkTextView    *gtk_view,
 		return;
 	}
 
-	/* Prepend separator */
-	menu_item = gtk_separator_menu_item_new ();
-	gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item);
-	gtk_widget_show (menu_item);
+	/* FIXME: Prepend separator */
+	/* menu_item = gtk_separator_menu_item_new (); */
+	/* gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menu_item); */
+	/* gtk_widget_show (menu_item); */
 
 	if (priv->enable_language_menu)
 	{
 		const GspellLanguage *current_language;
-		GtkMenuItem *lang_menu_item;
+		GMenuItem *lang_menu_item;
 
 		current_language = get_current_language (gspell_view);
 		lang_menu_item = _gspell_context_menu_get_language_menu_item (current_language,
@@ -220,8 +264,7 @@ populate_popup_cb (GtkTextView    *gtk_view,
 									      gspell_view);
 
 		/* Prepend language sub-menu */
-		gtk_menu_shell_prepend (GTK_MENU_SHELL (menu),
-					GTK_WIDGET (lang_menu_item));
+		g_menu_append_item (menu, lang_menu_item);
 	}
 
 	if (priv->inline_checker != NULL)
@@ -229,6 +272,8 @@ populate_popup_cb (GtkTextView    *gtk_view,
 		/* Prepend suggestions */
 		_gspell_inline_checker_text_buffer_populate_popup (priv->inline_checker, menu);
 	}
+
+	gtk_text_view_set_extra_menu (gtk_view, G_MENU_MODEL(menu));
 }
 
 static void
@@ -255,11 +300,13 @@ set_view (GspellTextView *gspell_view,
 	/* G_CONNECT_AFTER, so when menu items are prepended, they have more
 	 * chances to be the first in the menu.
 	 */
-	g_signal_connect_object (priv->view,
-				 "populate-popup",
-				 G_CALLBACK (populate_popup_cb),
-				 gspell_view,
-				 G_CONNECT_AFTER);
+	/* g_signal_connect_object (priv->view, */
+	/* 			 "populate-popup", */
+	/* 			 G_CALLBACK (populate_popup_cb), */
+	/* 			 gspell_view, */
+	/* 			 G_CONNECT_AFTER); */
+
+	set_extra_menu(gspell_view, gtk_view);
 
 	g_object_notify (G_OBJECT (gspell_view), "view");
 }
@@ -613,3 +660,4 @@ gspell_text_view_set_enable_language_menu (GspellTextView *gspell_view,
 }
 
 /* ex:set ts=8 noet: */
+

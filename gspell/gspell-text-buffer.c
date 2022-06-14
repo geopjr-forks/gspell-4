@@ -273,3 +273,4 @@ gspell_text_buffer_set_spell_checker (GspellTextBuffer *gspell_buffer,
 }
 
 /* ex:set ts=8 noet: */
+

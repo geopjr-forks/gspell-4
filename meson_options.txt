@@ -1,14 +1,17 @@
+option('demo',
+       type: 'boolean', value: true,
+       description: 'Build demo app')
 option('tests',
        type: 'boolean', value: true,
        description: 'Build tests (requires umockdev)')
 option('docs',
        description: 'Build API reference for ATK using GTK-Doc',
        type: 'boolean',
-       value: true)
+       value: false)
 option('vapi',
        type: 'boolean', value: true,
        description: 'Generate vapi data (requires vapigen).')
 option('introspection',
        description: 'Whether to build introspection files',
        type: 'boolean',
-       value: true)
+       value: false)

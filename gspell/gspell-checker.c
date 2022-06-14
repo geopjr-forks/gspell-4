@@ -286,7 +286,10 @@ create_new_dictionary (GspellChecker *checker)
 		return;
 	}
 
-	app_name = g_get_application_name ();
+	/* FIXME: APP NAME always in NULL */
+	/* app_name = g_get_application_name (); */
+
+	app_name = "my_app_name";
 	gspell_checker_add_word_to_session (checker, app_name, -1);
 }
 

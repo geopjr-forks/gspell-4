@@ -50,7 +50,7 @@ void	_gspell_inline_checker_text_buffer_detach_view		(GspellInlineCheckerTextBuf
 
 G_GNUC_INTERNAL
 void	_gspell_inline_checker_text_buffer_populate_popup	(GspellInlineCheckerTextBuffer *spell,
-								 GtkMenu                       *menu);
+								 GMenu                       *menu);
 
 /* For unit tests */
 

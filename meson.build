@@ -54,7 +54,7 @@ endif
 
 # Dependencies
 glib_req_version	= '>= 2.44'
-gtk_req_version  	= '>= 3.20'
+gtk_req_version  	= '>= 4.6.5'
 enchant_req_version	= '>= 2.1.1'
 ic_req_version		= '>= 71.1'
 
@@ -63,7 +63,7 @@ glib_dep = [dependency('glib-2.0', version: glib_req_version,
             dependency('gobject-2.0', version: glib_req_version,
                           fallback : ['glib', 'libgobject_dep'])]
 
-gtk_dep = [dependency('gtk+-3.0', version: gtk_req_version)]
+gtk_dep = [dependency('gtk4', version: gtk_req_version)]
 
 enchant_dep = [dependency('enchant-2', version: enchant_req_version)]
 
@@ -79,7 +79,11 @@ root_inc = include_directories('.')
 gspell_inc = include_directories('gspell')
 
 subdir('gspell')
-subdir('gspell-app')
+
+if get_option('demo')
+  subdir('gspell-app')
+endif
+
 subdir('po')
 
 if get_option('tests')
