@@ -56,7 +56,7 @@ endif
 glib_req_version	= '>= 2.44'
 gtk_req_version  	= '>= 4.6.5'
 enchant_req_version	= '>= 2.1.1'
-ic_req_version		= '>= 71.1'
+ic_req_version		= '>= 65.1'
 
 glib_dep = [dependency('glib-2.0', version: glib_req_version,
                           fallback : ['glib', 'libglib_dep']),
