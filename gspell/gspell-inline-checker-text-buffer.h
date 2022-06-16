@@ -49,6 +49,10 @@ void	_gspell_inline_checker_text_buffer_detach_view		(GspellInlineCheckerTextBuf
 								 GtkTextView                   *view);
 
 G_GNUC_INTERNAL
+void	_gspell_inline_checker_text_buffer_correct		(GspellInlineCheckerTextBuffer *spell,
+					   			const gchar *suggested_word);
+
+G_GNUC_INTERNAL
 void	_gspell_inline_checker_text_buffer_populate_popup	(GspellInlineCheckerTextBuffer *spell,
 								 GMenu                       *menu);
 
@@ -67,3 +71,4 @@ G_END_DECLS
 #endif  /* GSPELL_INLINE_CHECKER_TEXT_BUFFER_H */
 
 /* ex:set ts=8 noet: */
+

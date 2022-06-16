@@ -287,7 +287,6 @@ check_subregion (GspellInlineCheckerTextBuffer *spell,
 								 word_start,
 								 word_byte_length,
 								 &error);
-
 			if (error != NULL)
 			{
 				g_warning ("Inline spell checker: %s", error->message);
@@ -842,6 +841,40 @@ get_word_extents_at_click_position (GspellInlineCheckerTextBuffer *spell,
 	return TRUE;
 }
 
+void
+_gspell_inline_checker_text_buffer_correct (GspellInlineCheckerTextBuffer *spell,
+					   const gchar *suggested_word)
+{
+	GtkTextIter start;
+	GtkTextIter end;
+	gchar *old_word;
+
+	g_return_if_fail (GSPELL_IS_INLINE_CHECKER_TEXT_BUFFER (spell));
+
+	if (!get_word_extents_at_click_position (spell, &start, &end))
+	{
+		return;
+	}
+
+	old_word = gtk_text_buffer_get_text (spell->buffer, &start, &end, FALSE);
+
+	gtk_text_buffer_begin_user_action (spell->buffer);
+
+	gtk_text_buffer_delete (spell->buffer, &start, &end);
+	gtk_text_buffer_insert (spell->buffer, &start, suggested_word, -1);
+
+	gtk_text_buffer_end_user_action (spell->buffer);
+
+	if (spell->spell_checker != NULL)
+	{
+		gspell_checker_set_correction (spell->spell_checker,
+					       old_word, -1,
+					       suggested_word, -1);
+	}
+
+	g_free (old_word);
+}
+
 static void
 suggestion_activated_cb (const gchar *suggested_word,
 			 gpointer     user_data)
@@ -911,23 +944,9 @@ _gspell_inline_checker_text_buffer_populate_popup (GspellInlineCheckerTextBuffer
 								    misspelled_word,
 								    suggestion_activated_cb,
 								    spell);
-
-	/* gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), */
-	/* 			GTK_WIDGET (menu_item)); */
-
 	g_menu_append_item (menu, menu_item);
 
 	g_free (misspelled_word);
-}
-
-static gboolean
-draw_cb (GtkWidget                     *text_view,
-	 cairo_t                       *cr,
-	 GspellInlineCheckerTextBuffer *spell)
-{
-	install_timeout (spell, TIMEOUT_DURATION_DRAWING);
-
-	return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -993,51 +1012,6 @@ language_notify_cb (GspellChecker                 *checker,
 {
 	_gspell_current_word_policy_language_changed (spell->current_word_policy);
 	recheck_all (spell);
-}
-
-/* When the user right-clicks on a word, they want to check that word.
- * Here, we do NOT move the cursor to the location of the clicked-upon word
- * since that prevents the use of edit functions on the context menu.
- */
-/* static gboolean */
-/* button_press_event_cb (GtkTextView                   *view, */
-/* 		       GdkEventButton                *event, */
-/* 		       GspellInlineCheckerTextBuffer *spell) */
-/* { */
-/* 	if (event->button == GDK_BUTTON_SECONDARY) */
-/* 	{ */
-/* 		GtkTextBuffer *buffer = gtk_text_view_get_buffer (view); */
-/* 		GtkTextIter iter; */
-/* 		gint x; */
-/* 		gint y; */
-
-/* 		gtk_text_view_window_to_buffer_coords (view, */
-/* 						       GTK_TEXT_WINDOW_TEXT, */
-/* 						       event->x, event->y, */
-/* 						       &x, &y); */
-
-/* 		gtk_text_view_get_iter_at_location (view, &iter, x, y); */
-
-/* 		gtk_text_buffer_move_mark (buffer, spell->mark_click, &iter); */
-/* 	} */
-
-/* 	return GDK_EVENT_PROPAGATE; */
-/* } */
-
-/* Move the insert mark before popping up the menu, otherwise it
- * will contain the wrong set of suggestions.
- */
-static gboolean
-popup_menu_cb (GtkTextView                   *view,
-	       GspellInlineCheckerTextBuffer *spell)
-{
-	GtkTextIter iter;
-
-	gtk_text_buffer_get_iter_at_mark (spell->buffer, &iter,
-					  gtk_text_buffer_get_insert (spell->buffer));
-	gtk_text_buffer_move_mark (spell->buffer, spell->mark_click, &iter);
-
-	return FALSE;
 }
 
 static void
@@ -1218,7 +1192,7 @@ set_buffer (GspellInlineCheckerTextBuffer *spell,
 	_gspell_utils_init_underline_rgba (&underline_color);
 
 	spell->highlight_tag = gtk_text_buffer_create_tag (spell->buffer, NULL,
-							   "underline", PANGO_UNDERLINE_SINGLE,
+							   "underline", PANGO_UNDERLINE_ERROR_LINE,
 							   "underline-rgba", &underline_color,
 							   NULL);
 	g_object_ref (spell->highlight_tag);
@@ -1397,6 +1371,38 @@ _gspell_inline_checker_text_buffer_new (GtkTextBuffer *buffer)
 			     NULL);
 }
 
+/* Move the insert mark before popping up the menu, otherwise it
+ * will contain the wrong set of suggestions.
+ */
+static void
+on_pressed_right_cb (GtkGestureClick* self,
+  gint n_press,
+  gdouble x,
+  gdouble y,
+  gpointer user_data)
+{
+	GspellInlineCheckerTextBuffer *spell;
+        spell = GSPELL_INLINE_CHECKER_TEXT_BUFFER (user_data);
+
+
+	GtkTextView    *view;
+        view = GTK_TEXT_VIEW ( g_slist_last (spell->views)->data );
+
+	GtkTextBuffer *buffer = gtk_text_view_get_buffer (view);
+	GtkTextIter iter;
+	gint cx;
+	gint cy;
+
+	gtk_text_view_window_to_buffer_coords (view,
+					       GTK_TEXT_WINDOW_TEXT,
+					       x, y,
+					       &cx, &cy);
+
+	gtk_text_view_get_iter_at_location (view, &iter, cx, cy);
+
+	gtk_text_buffer_move_mark (buffer, spell->mark_click, &iter);
+}
+
 /**
  * _gspell_inline_checker_text_buffer_attach_view:
  * @spell: a #GspellInlineCheckerTextBuffer.
@@ -1414,23 +1420,13 @@ _gspell_inline_checker_text_buffer_attach_view (GspellInlineCheckerTextBuffer *s
 	g_return_if_fail (gtk_text_view_get_buffer (view) == spell->buffer);
 	g_return_if_fail (g_slist_find (spell->views, view) == NULL);
 
-	/* g_signal_connect_object (view, */
-	/* 			 "button-press-event", */
-	/* 			 G_CALLBACK (button_press_event_cb), */
-	/* 			 spell, */
-	/* 			 0); */
+        GtkGesture * gesture_click = gtk_gesture_click_new ();
 
-	/* g_signal_connect_object (view, */
-	/* 			 "popup-menu", */
-	/* 			 G_CALLBACK (popup_menu_cb), */
-	/* 			 spell, */
-	/* 			 0); */
+	gtk_gesture_single_set_button (GTK_GESTURE_SINGLE(gesture_click), 3);
 
-	/* g_signal_connect_object (view, */
-	/* 			 "draw", */
-	/* 			 G_CALLBACK (draw_cb), */
-	/* 			 spell, */
-	/* 			 0); */
+	gtk_widget_add_controller (GTK_WIDGET(view), GTK_EVENT_CONTROLLER(gesture_click));
+
+	g_signal_connect_object (gesture_click, "pressed", G_CALLBACK(on_pressed_right_cb), spell, 0);
 
 	spell->views = g_slist_prepend (spell->views, view);
 
@@ -1485,3 +1481,5 @@ _gspell_inline_checker_text_buffer_get_highlight_tag (GspellInlineCheckerTextBuf
 }
 
 /* ex:set ts=8 noet: */
+
+

@@ -286,10 +286,7 @@ create_new_dictionary (GspellChecker *checker)
 		return;
 	}
 
-	/* FIXME: APP NAME always in NULL */
-	/* app_name = g_get_application_name (); */
-
-	app_name = "my_app_name";
+	app_name = g_get_application_name ();
 	gspell_checker_add_word_to_session (checker, app_name, -1);
 }
 
@@ -668,3 +665,4 @@ gspell_checker_get_enchant_dict (GspellChecker *checker)
 }
 
 /* ex:set ts=8 noet: */
+

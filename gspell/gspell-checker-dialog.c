@@ -89,8 +89,9 @@ set_spell_checker (GspellCheckerDialog *dialog,
 
 		lang = gspell_checker_get_language (checker);
 
-		gtk_header_bar_set_subtitle (header_bar,
-					     gspell_language_get_name (lang));
+		/* FIXME: set_title_widget */
+		/* gtk_header_bar_set_subtitle (header_bar, */
+		/* 			     gspell_language_get_name (lang)); */
 	}
 }
 
@@ -132,12 +133,15 @@ set_suggestions (GspellCheckerDialog *dialog,
 	GtkTreeSelection *selection;
 	const gchar *first_suggestion;
 	GSList *l;
+	GtkEntryBuffer * entry_buffer;
 
 	priv = gspell_checker_dialog_get_instance_private (dialog);
 
 	clear_suggestions (dialog);
 
 	store = GTK_LIST_STORE (gtk_tree_view_get_model (priv->suggestions_view));
+
+	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
 
 	if (suggestions == NULL)
 	{
@@ -150,7 +154,10 @@ set_suggestions (GspellCheckerDialog *dialog,
 				    COLUMN_SUGGESTION, _("(no suggested words)"),
 				    -1);
 
-		gtk_entry_set_text (priv->word_entry, "");
+
+
+		gtk_entry_buffer_set_text (entry_buffer, "", -1);
+
 		gtk_widget_set_sensitive (GTK_WIDGET (priv->suggestions_view), FALSE);
 		return;
 	}
@@ -158,7 +165,7 @@ set_suggestions (GspellCheckerDialog *dialog,
 	gtk_widget_set_sensitive (GTK_WIDGET (priv->suggestions_view), TRUE);
 
 	first_suggestion = suggestions->data;
-	gtk_entry_set_text (priv->word_entry, first_suggestion);
+	gtk_entry_buffer_set_text (entry_buffer, first_suggestion, -1);
 
 	for (l = suggestions; l != NULL; l = l->next)
 	{
@@ -207,11 +214,14 @@ static void
 set_completed (GspellCheckerDialog *dialog)
 {
 	GspellCheckerDialogPrivate *priv;
+	GtkEntryBuffer * entry_buffer;
 
 	priv = gspell_checker_dialog_get_instance_private (dialog);
 
+	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
+
 	clear_suggestions (dialog);
-	gtk_entry_set_text (priv->word_entry, "");
+	gtk_entry_buffer_set_text (entry_buffer, "", -1);
 
 	gtk_widget_set_sensitive (GTK_WIDGET (priv->word_entry), FALSE);
 	gtk_widget_set_sensitive (priv->check_word_button, FALSE);
@@ -443,8 +453,11 @@ suggestions_selection_changed_handler (GtkTreeSelection    *selection,
 	GtkTreeModel *model;
 	GtkTreeIter iter;
 	gchar *text;
+	GtkEntryBuffer * entry_buffer;
 
 	priv = gspell_checker_dialog_get_instance_private (dialog);
+
+	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
 
 	if (!gtk_tree_selection_get_selected (selection, &model, &iter))
 	{
@@ -455,7 +468,7 @@ suggestions_selection_changed_handler (GtkTreeSelection    *selection,
 			    COLUMN_SUGGESTION, &text,
 			    -1);
 
-	gtk_entry_set_text (priv->word_entry, text);
+	gtk_entry_buffer_set_text (entry_buffer, text, -1);
 
 	g_free (text);
 }
@@ -468,12 +481,15 @@ check_word_button_clicked_handler (GtkButton           *button,
 	const gchar *word;
 	gboolean correctly_spelled;
 	GError *error = NULL;
+	GtkEntryBuffer * entry_buffer;
 
 	priv = gspell_checker_dialog_get_instance_private (dialog);
 
+	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
+
 	g_return_if_fail (gtk_entry_get_text_length (priv->word_entry) > 0);
 
-	word = gtk_entry_get_text (priv->word_entry);
+	word = gtk_entry_buffer_get_text (entry_buffer);
 
 	correctly_spelled = gspell_checker_check_word (priv->checker, word, -1, &error);
 
@@ -560,12 +576,15 @@ change_button_clicked_handler (GtkButton           *button,
 	GspellCheckerDialogPrivate *priv;
 	const gchar *entry_text;
 	gchar *change_to;
+	GtkEntryBuffer * entry_buffer;
 
 	priv = gspell_checker_dialog_get_instance_private (dialog);
 
+	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
+
 	g_return_if_fail (priv->misspelled_word != NULL);
 
-	entry_text = gtk_entry_get_text (priv->word_entry);
+	entry_text = gtk_entry_buffer_get_text (entry_buffer);
 	g_return_if_fail (entry_text != NULL);
 	g_return_if_fail (entry_text[0] != '\0');
 
@@ -601,12 +620,15 @@ change_all_button_clicked_handler (GtkButton           *button,
 	GspellCheckerDialogPrivate *priv;
 	const gchar *entry_text;
 	gchar *change_to;
+	GtkEntryBuffer * entry_buffer;
 
 	priv = gspell_checker_dialog_get_instance_private (dialog);
 
+	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
+
 	g_return_if_fail (priv->misspelled_word != NULL);
 
-	entry_text = gtk_entry_get_text (priv->word_entry);
+	entry_text = gtk_entry_buffer_get_text (entry_buffer);
 	g_return_if_fail (entry_text != NULL);
 	g_return_if_fail (entry_text[0] != '\0');
 
@@ -700,7 +722,7 @@ gspell_checker_dialog_init (GspellCheckerDialog *dialog)
 			  G_CALLBACK (suggestions_row_activated_handler),
 			  dialog);
 
-	gtk_widget_grab_default (priv->change_button);
+	gtk_window_set_default_widget(GTK_WINDOW(dialog), priv->change_button);
 }
 
 /**

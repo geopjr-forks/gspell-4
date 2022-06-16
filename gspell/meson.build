@@ -16,7 +16,7 @@ gspell_sources += [
   # 'gspell-language-chooser.c',
   # 'gspell-language-chooser-dialog.c',
   'gspell-navigator.c',
-  # 'gspell-navigator-text-view.c',
+  'gspell-navigator-text-view.c',
   'gspellregion.c',
   'gspell-text-buffer.c',
   'gspell-text-iter.c',

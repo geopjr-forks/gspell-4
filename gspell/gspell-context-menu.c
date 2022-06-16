@@ -93,13 +93,23 @@ get_language_menu (const GspellLanguage            *current_language,
 	{
 		const GspellLanguage *lang = l->data;
 		const gchar *lang_name;
-		/* GtkWidget *menu_item; */
+		const gchar *code;
+		GMenuItem *menu_item;
 		LanguageData *data;
 
+
 		lang_name = gspell_language_get_name (lang);
+		code = gspell_language_get_code (lang);
+		menu_item = g_menu_item_new (lang_name, NULL);
+
+		/* if (lang == current_language) { } */
+
+		g_menu_item_set_action_and_target (menu_item, "spelling.language", "s", code);
 
 		/* FIXME: set radio group */
-		g_menu_append (menu, lang_name, NULL);
+		g_menu_append_item (menu, menu_item);
+
+
 
 		/* if (lang == current_language) */
 		/* { */
@@ -165,6 +175,10 @@ _gspell_context_menu_get_language_menu_item (const GspellLanguage            *cu
 static void
 activate_suggestion_cb (GtkWidget *menu_item)
 {
+
+	printf("===\n%s\n===", "activate_suggestion_cb");
+				     return;
+
 	SuggestionData *data;
 
 	data = g_object_get_data (G_OBJECT (menu_item), SUGGESTION_DATA_KEY);
@@ -202,129 +216,184 @@ add_to_dictionary_cb (GtkWidget *menu_item)
 					     -1);
 }
 
-/* static GtkWidget * */
-/* get_suggestion_menu (GspellChecker                     *checker, */
-/* 		     const gchar                       *misspelled_word, */
-/* 		     GspellSuggestionActivatedCallback  callback, */
-/* 		     gpointer                           user_data) */
-/* { */
-/* 	GtkWidget *top_menu; */
-/* 	GtkWidget *menu_item; */
-/* 	GSList *suggestions = NULL; */
-/* 	SuggestionData *data; */
+static GMenu *
+get_suggestion_menu (GspellChecker                     *checker,
+		     const gchar                       *misspelled_word,
+		     GspellSuggestionActivatedCallback  callback,
+		     gpointer                           user_data)
+{
+	/* GtkWidget *top_menu; */
+	GMenuItem *menu_item;
+	GSList *suggestions = NULL;
+	SuggestionData *data;
 
-/* 	top_menu = gtk_menu_new (); */
+	/* top_menu = gtk_menu_new (); */
 
-/* 	suggestions = gspell_checker_get_suggestions (checker, misspelled_word, -1); */
+	GMenu * menu = g_menu_new ();
 
-/* 	if (suggestions == NULL) */
-/* 	{ */
+	suggestions = gspell_checker_get_suggestions (checker, misspelled_word, -1);
+
+	if (suggestions == NULL)
+	{
 		/* No suggestions. Put something in the menu anyway... */
-/* 		menu_item = gtk_menu_item_new_with_label (_("(no suggested words)")); */
-/* 		gtk_widget_set_sensitive (menu_item, FALSE); */
-/* 		gtk_menu_shell_prepend (GTK_MENU_SHELL (top_menu), menu_item); */
-/* 	} */
-/* 	else */
-/* 	{ */
-/* 		GtkWidget *menu = top_menu; */
-/* 		gint count = 0; */
-/* 		GSList *l; */
+		menu_item = g_menu_item_new(_("(no suggested words)"), NULL);
+		g_menu_append_item (menu, menu_item);
+	}
+	else {
+
+		GSList *l;
+		for (l = suggestions; l != NULL; l = l->next)
+		{
+			gchar *suggested_word = l->data;
+			menu_item = g_menu_item_new (suggested_word, NULL);
+			g_menu_item_set_action_and_target (menu_item, "spelling.correct", "s", suggested_word);
+
+			g_menu_append_item (menu, menu_item);
+
+			data = g_new0 (SuggestionData, 1);
+			data->suggested_word = g_strdup (suggested_word);
+			data->callback = callback;
+			data->user_data = user_data;
+
+			/* g_object_set_data_full (G_OBJECT (menu_item), */
+			/* 			SUGGESTION_DATA_KEY, */
+			/* 			data, */
+			/* 			suggestion_data_free); */
+
+			/* g_signal_connect (menu_item, */
+			/* 		  "activate", */
+			/* 		  G_CALLBACK (activate_suggestion_cb), */
+			/* 		  NULL); */
+
+		}
+	}
+
+	GMenu * add_ignore_menu = g_menu_new ();
+
+	menu_item = g_menu_item_new (_("_Ignore All"), NULL);
+	g_menu_item_set_action_and_target (menu_item, "spelling.ignore-all", "s", misspelled_word);
+
+	g_menu_append_item (add_ignore_menu, menu_item);
+
+	menu_item = g_menu_item_new (_("_Add"), NULL);
+	g_menu_item_set_action_and_target (menu_item, "spelling.add", "s", misspelled_word);
+
+	g_menu_append_item (add_ignore_menu, menu_item);
+
+	GMenuItem * add_ignore_section = g_menu_item_new_section (NULL, G_MENU_MODEL(add_ignore_menu));
+
+	g_menu_append_item (menu, add_ignore_section);
+
+	return menu;
+
+	/* if (suggestions == NULL) */
+	/* { */
+		/* No suggestions. Put something in the menu anyway... */
+		/* menu_item = gtk_menu_item_new_with_label (_("(no suggested words)")); */
+		/* gtk_widget_set_sensitive (menu_item, FALSE); */
+		/* gtk_menu_shell_prepend (GTK_MENU_SHELL (top_menu), menu_item); */
+	/* } */
+	/* else */
+	/* { */
+	/* 	GtkWidget *menu = top_menu; */
+	/* 	gint count = 0; */
+	/* 	GSList *l; */
 
 		/* Build a set of menus with suggestions. */
-/* 		for (l = suggestions; l != NULL; l = l->next) */
-/* 		{ */
-/* 			gchar *suggested_word = l->data; */
-/* 			GtkWidget *label; */
-/* 			gchar *label_text; */
+	/* 	for (l = suggestions; l != NULL; l = l->next) */
+	/* 	{ */
+	/* 		gchar *suggested_word = l->data; */
+	/* 		GtkWidget *label; */
+	/* 		gchar *label_text; */
 
-/* 			if (count == 10) */
-/* 			{ */
+	/* 		if (count == 10) */
+	/* 		{ */
 				/* Separator */
-/* 				menu_item = gtk_separator_menu_item_new (); */
-/* 				gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
+	/* 			menu_item = gtk_separator_menu_item_new (); */
+	/* 			gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
 
-/* 				menu_item = gtk_menu_item_new_with_mnemonic (_("_More…")); */
-/* 				gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
+	/* 			menu_item = gtk_menu_item_new_with_mnemonic (_("_More…")); */
+	/* 			gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
 
-/* 				menu = gtk_menu_new (); */
-/* 				gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), menu); */
-/* 				count = 0; */
-/* 			} */
+	/* 			menu = gtk_menu_new (); */
+	/* 			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), menu); */
+	/* 			count = 0; */
+	/* 		} */
 
-/* 			label_text = g_strdup_printf ("<b>%s</b>", suggested_word); */
+	/* 		label_text = g_strdup_printf ("<b>%s</b>", suggested_word); */
 
-/* 			label = gtk_label_new (label_text); */
-/* 			gtk_label_set_use_markup (GTK_LABEL (label), TRUE); */
-/* 			gtk_widget_set_halign (label, GTK_ALIGN_START); */
+	/* 		label = gtk_label_new (label_text); */
+	/* 		gtk_label_set_use_markup (GTK_LABEL (label), TRUE); */
+	/* 		gtk_widget_set_halign (label, GTK_ALIGN_START); */
 
-/* 			menu_item = gtk_menu_item_new (); */
-/* 			gtk_container_add (GTK_CONTAINER (menu_item), label); */
-/* 			gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
+	/* 		menu_item = gtk_menu_item_new (); */
+	/* 		gtk_container_add (GTK_CONTAINER (menu_item), label); */
+	/* 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
 
-/* 			data = g_new0 (SuggestionData, 1); */
-/* 			data->suggested_word = g_strdup (suggested_word); */
-/* 			data->callback = callback; */
-/* 			data->user_data = user_data; */
+	/* 		data = g_new0 (SuggestionData, 1); */
+	/* 		data->suggested_word = g_strdup (suggested_word); */
+	/* 		data->callback = callback; */
+	/* 		data->user_data = user_data; */
 
-/* 			g_object_set_data_full (G_OBJECT (menu_item), */
-/* 						SUGGESTION_DATA_KEY, */
-/* 						data, */
-/* 						suggestion_data_free); */
+	/* 		g_object_set_data_full (G_OBJECT (menu_item), */
+	/* 					SUGGESTION_DATA_KEY, */
+	/* 					data, */
+	/* 					suggestion_data_free); */
 
-/* 			g_signal_connect (menu_item, */
-/* 					  "activate", */
-/* 					  G_CALLBACK (activate_suggestion_cb), */
-/* 					  NULL); */
+	/* 		g_signal_connect (menu_item, */
+	/* 				  "activate", */
+	/* 				  G_CALLBACK (activate_suggestion_cb), */
+	/* 				  NULL); */
 
-/* 			g_free (label_text); */
-/* 			count++; */
-/* 		} */
-/* 	} */
+	/* 		g_free (label_text); */
+	/* 		count++; */
+	/* 	} */
+	/* } */
 
-/* 	g_slist_free_full (suggestions, g_free); */
+	/* g_slist_free_full (suggestions, g_free); */
 
 	/* Separator */
-/* 	menu_item = gtk_separator_menu_item_new (); */
-/* 	gtk_menu_shell_append (GTK_MENU_SHELL (top_menu), menu_item); */
+	/* menu_item = gtk_separator_menu_item_new (); */
+	/* gtk_menu_shell_append (GTK_MENU_SHELL (top_menu), menu_item); */
 
 	/* Ignore all */
-/* 	menu_item = gtk_menu_item_new_with_mnemonic (_("_Ignore All")); */
-/* 	gtk_menu_shell_append (GTK_MENU_SHELL (top_menu), menu_item); */
+	/* menu_item = gtk_menu_item_new_with_mnemonic (_("_Ignore All")); */
+	/* gtk_menu_shell_append (GTK_MENU_SHELL (top_menu), menu_item); */
 
-/* 	data = g_new0 (SuggestionData, 1); */
-/* 	data->checker = g_object_ref (checker); */
-/* 	data->misspelled_word = g_strdup (misspelled_word); */
+	/* data = g_new0 (SuggestionData, 1); */
+	/* data->checker = g_object_ref (checker); */
+	/* data->misspelled_word = g_strdup (misspelled_word); */
 
-/* 	g_object_set_data_full (G_OBJECT (menu_item), */
-/* 				SUGGESTION_DATA_KEY, */
-/* 				data, */
-/* 				suggestion_data_free); */
+	/* g_object_set_data_full (G_OBJECT (menu_item), */
+	/* 			SUGGESTION_DATA_KEY, */
+	/* 			data, */
+	/* 			suggestion_data_free); */
 
-/* 	g_signal_connect (menu_item, */
-/* 			  "activate", */
-/* 			  G_CALLBACK (ignore_all_cb), */
-/* 			  NULL); */
+	/* g_signal_connect (menu_item, */
+	/* 		  "activate", */
+	/* 		  G_CALLBACK (ignore_all_cb), */
+	/* 		  NULL); */
 
 	/* Add to Dictionary */
-/* 	menu_item = gtk_menu_item_new_with_mnemonic (_("_Add")); */
-/* 	gtk_menu_shell_append (GTK_MENU_SHELL (top_menu), menu_item); */
+	/* menu_item = gtk_menu_item_new_with_mnemonic (_("_Add")); */
+	/* gtk_menu_shell_append (GTK_MENU_SHELL (top_menu), menu_item); */
 
-/* 	data = g_new0 (SuggestionData, 1); */
-/* 	data->checker = g_object_ref (checker); */
-/* 	data->misspelled_word = g_strdup (misspelled_word); */
+	/* data = g_new0 (SuggestionData, 1); */
+	/* data->checker = g_object_ref (checker); */
+	/* data->misspelled_word = g_strdup (misspelled_word); */
 
-/* 	g_object_set_data_full (G_OBJECT (menu_item), */
-/* 				SUGGESTION_DATA_KEY, */
-/* 				data, */
-/* 				suggestion_data_free); */
+	/* g_object_set_data_full (G_OBJECT (menu_item), */
+	/* 			SUGGESTION_DATA_KEY, */
+	/* 			data, */
+	/* 			suggestion_data_free); */
 
-/* 	g_signal_connect (menu_item, */
-/* 			  "activate", */
-/* 			  G_CALLBACK (add_to_dictionary_cb), */
-/* 			  NULL); */
+	/* g_signal_connect (menu_item, */
+	/* 		  "activate", */
+	/* 		  G_CALLBACK (add_to_dictionary_cb), */
+	/* 		  NULL); */
 
-/* 	return top_menu; */
-/* } */
+	/* return top_menu; */
+}
 
 GMenuItem *
 _gspell_context_menu_get_suggestions_menu_item (GspellChecker                     *checker,
@@ -352,14 +421,12 @@ _gspell_context_menu_get_suggestions_menu_item (GspellChecker                   
 	GMenu *suggestion_menu;
 	GMenuItem *menu_item;
 
-	 GMenu * color_items = g_menu_new();
-	  g_menu_append (color_items, "Light", NULL);
-	  g_menu_append (color_items, "Dark", NULL);
-	  g_menu_append (color_items, "Sepia", NULL);
+	suggestion_menu = get_suggestion_menu (checker, misspelled_word, callback, user_data);
 
-	menu_item = g_menu_item_new_submenu ("Theme", G_MENU_MODEL(color_items));
+	menu_item = g_menu_item_new_submenu (_("_Spelling Suggestions…"), G_MENU_MODEL (suggestion_menu));
 
 	return menu_item;
 }
 
 /* ex:set ts=8 noet: */
+
