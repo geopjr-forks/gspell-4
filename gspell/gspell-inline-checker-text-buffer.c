@@ -1394,7 +1394,7 @@ on_pressed_right_cb (GtkGestureClick* self,
 	gint cy;
 
 	gtk_text_view_window_to_buffer_coords (view,
-					       GTK_TEXT_WINDOW_TEXT,
+					       GTK_TEXT_WINDOW_WIDGET,
 					       x, y,
 					       &cx, &cy);
 
