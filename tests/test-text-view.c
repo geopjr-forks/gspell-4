@@ -51,28 +51,34 @@ test_spell_class_init (TestSpellClass *klass)
 }
 
 static void
-checker_button_clicked_cb (GtkButton *checker_button,
-			   TestSpell *spell)
+checker_button_gesture_click_pressed_on ( GtkGestureClick* self,
+					  gint n_press,
+					  gdouble x,
+					  gdouble y,
+					  TestSpell *spell)
 {
-	GtkWidget *window;
-	GtkWidget *checker_dialog;
-	GspellNavigator *navigator;
+  GtkWidget * window;
+  GtkWidget * checker_dialog;
+  GspellNavigator * navigator;
 
-	window = gtk_widget_get_toplevel (GTK_WIDGET (spell));
-	if (!gtk_widget_is_toplevel (window))
-	{
-		g_return_if_reached ();
-	}
+  window = GTK_WIDGET (gtk_widget_get_root(GTK_WIDGET(spell)));
+  if (!GTK_IS_WINDOW(window))
+  {
+    g_return_if_reached ();
+  }
 
-	navigator = gspell_navigator_text_view_new (spell->view);
-	checker_dialog = gspell_checker_dialog_new (GTK_WINDOW (window), navigator);
+  navigator = gspell_navigator_text_view_new (spell->view);
+  checker_dialog = gspell_checker_dialog_new (GTK_WINDOW (window), navigator);
 
-	gtk_widget_show (checker_dialog);
+  gtk_widget_show (checker_dialog);
 }
 
 static void
-change_buffer_button_clicked_cb (GtkButton *change_buffer_button,
-				 TestSpell *spell)
+change_buffer_button_clicked_cb (GtkGestureClick* self,
+				gint n_press,
+				gdouble x,
+				gdouble y,
+				TestSpell *spell)
 {
 	GtkTextBuffer *old_gtk_buffer;
 	GtkTextBuffer *new_gtk_buffer;
@@ -103,12 +109,10 @@ get_sidebar (TestSpell *spell)
 	GspellChecker *checker;
 	const GspellLanguage *language;
 	GspellTextView *gspell_view;
+	GtkGesture * checker_button_gesture_click;
+	GtkGesture * change_buffer_gesture_click;
 
-	sidebar = gtk_grid_new ();
-
-	g_object_set (sidebar,
-		      "margin", 6,
-		      NULL);
+	sidebar = gtk_grid_new();
 
 	gtk_orientable_set_orientation (GTK_ORIENTABLE (sidebar),
 					GTK_ORIENTATION_VERTICAL);
@@ -117,20 +121,20 @@ get_sidebar (TestSpell *spell)
 
 	/* Button to launch a spell checker dialog */
 	checker_button = gtk_button_new_with_mnemonic ("_Check Spelling…");
-	gtk_container_add (GTK_CONTAINER (sidebar),
-			   checker_button);
 
-	g_signal_connect (checker_button,
-			  "clicked",
-			  G_CALLBACK (checker_button_clicked_cb),
-			  spell);
+	gtk_grid_attach (GTK_GRID (sidebar), checker_button, 0, 0, 1, 1);
+
+	checker_button_gesture_click = gtk_gesture_click_new ();
+
+	g_signal_connect (G_OBJECT(checker_button_gesture_click), "pressed", G_CALLBACK(checker_button_gesture_click_pressed_on), spell);
+
+	gtk_widget_add_controller (checker_button, GTK_EVENT_CONTROLLER (checker_button_gesture_click));
 
 	/* Button to launch a language dialog */
 	checker = get_spell_checker (spell);
 	language = gspell_checker_get_language (checker);
 	language_button = gspell_language_chooser_button_new (language);
-	gtk_container_add (GTK_CONTAINER (sidebar),
-			   language_button);
+	gtk_grid_attach (GTK_GRID (sidebar), language_button, 0, 1, 1, 1);
 
 	g_object_bind_property (language_button, "language",
 				checker, "language",
@@ -138,8 +142,7 @@ get_sidebar (TestSpell *spell)
 
 	/* Checkbutton to activate the inline spell checker */
 	highlight_checkbutton = gtk_check_button_new_with_mnemonic ("_Highlight Misspelled Words");
-	gtk_container_add (GTK_CONTAINER (sidebar),
-			   highlight_checkbutton);
+	gtk_grid_attach (GTK_GRID (sidebar), highlight_checkbutton, 0, 2, 1, 1);
 
 	gspell_view = gspell_text_view_get_from_gtk_text_view (spell->view);
 	gspell_text_view_set_enable_language_menu (gspell_view, TRUE);
@@ -152,13 +155,13 @@ get_sidebar (TestSpell *spell)
 
 	/* Button to change the GtkTextBuffer */
 	change_buffer_button = gtk_button_new_with_mnemonic ("Change _Buffer!");
-	gtk_container_add (GTK_CONTAINER (sidebar),
-			   change_buffer_button);
+	gtk_grid_attach (GTK_GRID (sidebar), change_buffer_button, 0, 3, 1, 1);
 
-	g_signal_connect (change_buffer_button,
-			  "clicked",
-			  G_CALLBACK (change_buffer_button_clicked_cb),
-			  spell);
+	change_buffer_gesture_click = gtk_gesture_click_new ();
+
+	g_signal_connect (G_OBJECT(change_buffer_gesture_click), "pressed", G_CALLBACK(change_buffer_button_clicked_cb), spell);
+
+	gtk_widget_add_controller (change_buffer_button, GTK_EVENT_CONTROLLER (change_buffer_gesture_click));
 
 	return sidebar;
 }
@@ -166,10 +169,10 @@ get_sidebar (TestSpell *spell)
 static void
 test_spell_init (TestSpell *spell)
 {
-	GtkWidget *scrolled_window;
-	GtkTextBuffer *gtk_buffer;
+	GtkWidget * scrolled_window;
+	GtkTextBuffer * gtk_buffer;
 	GspellTextBuffer *gspell_buffer;
-	GspellChecker *checker;
+	GspellChecker * checker;
 
 	spell->view = GTK_TEXT_VIEW (gtk_text_view_new ());
 	gtk_buffer = gtk_text_view_get_buffer (spell->view);
@@ -179,24 +182,23 @@ test_spell_init (TestSpell *spell)
 	gspell_text_buffer_set_spell_checker (gspell_buffer, checker);
 	g_object_unref (checker);
 
-	gtk_orientable_set_orientation (GTK_ORIENTABLE (spell),
-					GTK_ORIENTATION_HORIZONTAL);
+	gtk_orientable_set_orientation (GTK_ORIENTABLE (spell), GTK_ORIENTATION_HORIZONTAL);
 
-	gtk_container_add (GTK_CONTAINER (spell),
-			   get_sidebar (spell));
+	gtk_grid_set_row_spacing (GTK_GRID(spell), 6);
+	gtk_grid_set_column_spacing (GTK_GRID(spell), 6);
 
-	scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+	gtk_grid_attach (GTK_GRID(spell), get_sidebar (spell), 0, 0, 1, 1);
+
+	scrolled_window = gtk_scrolled_window_new ();
 
 	g_object_set (scrolled_window,
-		      "expand", TRUE,
+		      "vexpand", TRUE,
+		      "hexpand", TRUE,
 		      NULL);
 
-	gtk_container_add (GTK_CONTAINER (scrolled_window),
-			   GTK_WIDGET (spell->view));
-	gtk_container_add (GTK_CONTAINER (spell),
-			   scrolled_window);
+	gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scrolled_window), GTK_WIDGET(spell->view));
 
-	gtk_widget_show_all (GTK_WIDGET (spell));
+	gtk_grid_attach (GTK_GRID(spell), scrolled_window, 1, 0, 1, 1);
 }
 
 static TestSpell *
@@ -235,34 +237,47 @@ print_available_language_codes (void)
 	g_print ("\n");
 }
 
+static void
+activate(GtkApplication* app,
+         gpointer user_data)
+{
+	  GtkWidget *window;
+	  GtkWidget * titlebar;
+	  GtkWidget * scrolled_window;
+	  GtkTextView *gtk_view;
+	  GspellTextView *gspell_view;
+	  TestSpell *spell;
+
+	  window = gtk_application_window_new(app);
+	  titlebar = gtk_header_bar_new();
+
+	  gtk_header_bar_set_title_widget (GTK_HEADER_BAR (titlebar), gtk_label_new("Gspell Text View"));
+
+	  gtk_window_set_titlebar (GTK_WINDOW(window), titlebar);
+
+	  spell = test_spell_new ();
+	  gtk_window_set_child(GTK_WINDOW(window), GTK_WIDGET(spell));
+
+	  gtk_widget_show(window);
+}
+
 gint
 main (gint    argc,
       gchar **argv)
 {
-	GtkWidget *window;
-	TestSpell *spell;
-
-	gtk_init (&argc, &argv);
+	GtkApplication *app;
+  	int status;
 
 	print_available_language_codes ();
 
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	app = gtk_application_new("org.gnome.gspell.test-text-view", G_APPLICATION_FLAGS_NONE);
 
-	gtk_window_set_default_size (GTK_WINDOW (window), 800, 600);
+	g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+	status = g_application_run(G_APPLICATION(app), argc, argv);
+	g_object_unref(app);
 
-	g_signal_connect (window,
-			  "destroy",
-			  G_CALLBACK (gtk_main_quit),
-			  NULL);
-
-	spell = test_spell_new ();
-	gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (spell));
-
-	gtk_widget_show (window);
-
-	gtk_main ();
-
-	return 0;
+	return status;
 }
 
 /* ex:set ts=8 noet: */
+

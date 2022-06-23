@@ -22,7 +22,7 @@
 #endif
 
 #include "gspell-language-chooser-button.h"
-#include <glib/gi18n-lib.h>
+#include <glib-2.0/glib/gi18n-lib.h>
 #include "gspell-language-chooser.h"
 #include "gspell-language-chooser-dialog.h"
 
@@ -209,7 +209,7 @@ static void
 dialog_response_cb (GtkDialog *dialog,
 		    gint       response)
 {
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	gtk_window_destroy (GTK_WINDOW (dialog));
 }
 
 static void
@@ -237,11 +237,11 @@ ensure_dialog (GspellLanguageChooserButton *button)
 		return;
 	}
 
-	toplevel = gtk_widget_get_toplevel (GTK_WIDGET (button));
-	if (gtk_widget_is_toplevel (toplevel) && GTK_IS_WINDOW (toplevel))
-	{
-		parent = GTK_WINDOW (toplevel);
-	}
+	toplevel = GTK_WIDGET (gtk_widget_get_root(GTK_WIDGET(button)));
+  	if (GTK_IS_WINDOW(toplevel))
+  	{
+    		parent = GTK_WINDOW (toplevel);
+  	}
 
 	priv->dialog = GSPELL_LANGUAGE_CHOOSER_DIALOG (
 		gspell_language_chooser_dialog_new (parent,
