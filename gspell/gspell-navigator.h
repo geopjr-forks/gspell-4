@@ -35,11 +35,11 @@ G_BEGIN_DECLS
 GSPELL_AVAILABLE_IN_ALL
 G_DECLARE_INTERFACE (GspellNavigator, gspell_navigator,
 		     GSPELL, NAVIGATOR,
-		     GInitiallyUnowned)
+		     GObject)
 
 struct _GspellNavigatorInterface
 {
-	GTypeInterface parent_interface;
+	GObject		parent_interface;
 
 	gboolean	(* goto_next)		(GspellNavigator  *navigator,
 						 gchar           **word,

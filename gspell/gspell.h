@@ -35,6 +35,8 @@
 #include <gspell/gspell-text-buffer.h>
 #include <gspell/gspell-text-view.h>
 
+#include <gspell/enchant/gspell-enchant-checker.h>
+
 #include <gspell/gspell-enum-types.h>
 #include <gspell/gspell-version.h>
 

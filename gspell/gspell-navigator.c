@@ -49,7 +49,7 @@
  * different #GspellNavigator's.
  */
 
-G_DEFINE_INTERFACE (GspellNavigator, gspell_navigator, G_TYPE_INITIALLY_UNOWNED)
+G_DEFINE_INTERFACE (GspellNavigator, gspell_navigator, G_TYPE_OBJECT)
 
 static gboolean
 gspell_navigator_goto_next_default (GspellNavigator  *navigator,

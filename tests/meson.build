@@ -1,7 +1,8 @@
 tests = [
   # 'test-entry',
   'test-text-view',
-  'test-text-view-basic'
+  'test-text-view-basic',
+  'test-enchant-checker'
 ]
 
 foreach test_name: tests

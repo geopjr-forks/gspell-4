@@ -36,11 +36,11 @@ G_BEGIN_DECLS
 GSPELL_AVAILABLE_IN_ALL
 G_DECLARE_DERIVABLE_TYPE (GspellNavigatorTextView, gspell_navigator_text_view,
 			  GSPELL, NAVIGATOR_TEXT_VIEW,
-			  GInitiallyUnowned)
+			  GObject)
 
 struct _GspellNavigatorTextViewClass
 {
-	GInitiallyUnownedClass parent_class;
+	GObjectClass parent_class;
 
 	/* Padding for future expansion */
 	gpointer padding[8];
