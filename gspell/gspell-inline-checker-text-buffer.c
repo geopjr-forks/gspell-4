@@ -912,33 +912,53 @@ suggestion_activated_cb (const gchar *suggested_word,
 	g_free (old_word);
 }
 
-void
-_gspell_inline_checker_text_buffer_populate_popup (GspellInlineCheckerTextBuffer *spell,
-						   GMenu                       *menu)
+gchar *
+gspell_inline_checker_get_word_at_click_position (GspellInlineCheckerTextBuffer *spell)
 {
-	GMenuItem *menu_item;
 	GtkTextIter start;
 	GtkTextIter end;
 	gchar *misspelled_word;
 
 	if (!get_word_extents_at_click_position (spell, &start, &end))
 	{
-		return;
+		return NULL;
 	}
 
 	if (!gtk_text_iter_has_tag (&start, spell->highlight_tag))
 	{
-		return;
+		return NULL;
 	}
 
 	if (spell->spell_checker == NULL)
 	{
-		return;
+		return NULL;
 	}
+
+	misspelled_word = gtk_text_buffer_get_text (spell->buffer, &start, &end, FALSE);
+
+	return misspelled_word;
+}
+
+GSList *
+gspell_inline_checker_get_suggestions(GspellInlineCheckerTextBuffer *spell,
+				  	gchar * misspelled_word)
+{
+	return gspell_checker_get_suggestions (spell->spell_checker, misspelled_word, -1);
+}
+
+void
+_gspell_inline_checker_text_buffer_populate_popup (GspellInlineCheckerTextBuffer *spell,
+						   GMenu                       *menu)
+{
+	GMenuItem *menu_item;
+	gchar *misspelled_word;
 
 	/* Prepend suggestions */
 
-	misspelled_word = gtk_text_buffer_get_text (spell->buffer, &start, &end, FALSE);
+	misspelled_word = gspell_inline_checker_get_word_at_click_position(spell);
+
+	if (misspelled_word == NULL)
+		return;
 
 	menu_item = _gspell_context_menu_get_suggestions_menu_item (spell->spell_checker,
 								    misspelled_word,

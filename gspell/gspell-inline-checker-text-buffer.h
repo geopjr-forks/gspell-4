@@ -66,6 +66,13 @@ G_GNUC_INTERNAL
 GtkTextTag *
 	_gspell_inline_checker_text_buffer_get_highlight_tag	(GspellInlineCheckerTextBuffer *spell);
 
+G_GNUC_INTERNAL
+gchar * gspell_inline_checker_get_word_at_click_position	(GspellInlineCheckerTextBuffer *spell);
+
+G_GNUC_INTERNAL
+GSList * gspell_inline_checker_get_suggestions			(GspellInlineCheckerTextBuffer *spell,
+						   		gchar * misspelled_word);
+
 G_END_DECLS
 
 #endif  /* GSPELL_INLINE_CHECKER_TEXT_BUFFER_H */

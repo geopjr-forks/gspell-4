@@ -81,11 +81,8 @@ get_language_menu (const GspellLanguage            *current_language,
 		   gpointer                         user_data)
 {
 	GMenu * menu;
-	/* GtkWidget *menu; */
 	const GList *languages;
 	const GList *l;
-
-	/* menu = gtk_menu_new (); */
 	menu = g_menu_new ();
 
 	languages = gspell_language_get_available ();
@@ -95,59 +92,11 @@ get_language_menu (const GspellLanguage            *current_language,
 		const gchar *lang_name;
 		const gchar *code;
 		GMenuItem *menu_item;
-		LanguageData *data;
 
-
-		lang_name = gspell_language_get_name (lang);
 		code = gspell_language_get_code (lang);
 		menu_item = g_menu_item_new (lang_name, NULL);
-
-		/* if (lang == current_language) { } */
-
 		g_menu_item_set_action_and_target (menu_item, "spelling.language", "s", code);
-
-		/* FIXME: set radio group */
 		g_menu_append_item (menu, menu_item);
-
-
-
-		/* if (lang == current_language) */
-		/* { */
-			/* Do not create a group. Just mark the current language
-			 * as active.
-			 * With a group, the first language in the list gets
-		 	 * activated, which changes the GspellChecker language
-		 	 * before we arrive to the current_language.
-		 	 *
-		 	 * Also, having a bullet only for the current_language is
-		 	 * sufficient (to be like in Firefox), the menu is
-		 	 * anyway ephemeral. No need to have an empty bullet for
-		 	 * all the other languages.
-		 	 */
-		/* 	menu_item = gtk_radio_menu_item_new_with_label (NULL, lang_name); */
-		/* 	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_item), TRUE); */
-		/* } */
-		/* else */
-		/* { */
-		/* 	menu_item = gtk_menu_item_new_with_label (lang_name); */
-		/* } */
-
-		/* gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item); */
-
-		/* data = g_new0 (LanguageData, 1); */
-		/* data->lang = lang; */
-		/* data->callback = callback; */
-		/* data->user_data = user_data; */
-
-		/* g_object_set_data_full (G_OBJECT (menu_item), */
-		/* 			LANGUAGE_DATA_KEY, */
-		/* 			data, */
-		/* 			g_free); */
-
-		/* g_signal_connect (menu_item, */
-		/* 		  "activate", */
-		/* 		  G_CALLBACK (activate_language_cb), */
-		/* 		  NULL); */
 	}
 
 	return menu;
@@ -162,10 +111,6 @@ _gspell_context_menu_get_language_menu_item (const GspellLanguage            *cu
 	GMenuItem *menu_item;
 
 	lang_menu = get_language_menu (current_language, callback, user_data);
-
-	/* menu_item = GTK_MENU_ITEM (gtk_menu_item_new_with_mnemonic (_("_Language"))); */
-	/* gtk_menu_item_set_submenu (menu_item, lang_menu); */
-	/* gtk_widget_show_all (GTK_WIDGET (menu_item)); */
 
 	menu_item = g_menu_item_new_submenu (_("_Language"), G_MENU_MODEL (lang_menu));
 

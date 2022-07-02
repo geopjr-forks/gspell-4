@@ -24,7 +24,8 @@ gspell_sources += [
   'gspell-utils.c',
 
   'gspell-checker-provider.c',
-  'enchant/gspell-enchant-checker.c'
+  'enchant/gspell-enchant-checker.c',
+  'gspell-suggestion-menu.c'
 ]
 
 gspell_headers = [
