@@ -70,12 +70,14 @@ struct _GspellTextViewPrivate {
 
 	/* Addiction menu with language selector and spelling suggestions
 	 * so you don't have to recreate it every time you change the "language-menu" property */
-	GMenuModel * gspell_extra_menu;
+	GMenu * gspell_extra_menu;
 
 	/* Binding menu to the "extra-menu" of GtkTextView.
 	 * Need to hide or show the gpsell_extra_menu
 	 * NULL when property "language-menu" is false*/
 	GMenuModel * extra_menu;
+
+  GMenuModel * old_menu;
 
 	GMenuModel  * suggestions_menu;
 
@@ -343,7 +345,7 @@ on_pressed_cb(GtkGestureClick* self,
 	gspell_suggestions_action_set_enable(priv->misspelled_word != NULL);
 }
 
-static GMenuModel *
+static GMenu *
 gspell_text_view_extra_menu_new(GspellTextView *gspell_view)
 {
 	GspellTextViewPrivate *priv;
@@ -373,7 +375,7 @@ gspell_text_view_extra_menu_new(GspellTextView *gspell_view)
 	g_menu_append_section(top_menu, NULL, G_MENU_MODEL(language_menu));
 	g_menu_append_section(top_menu, NULL, G_MENU_MODEL(spelling_menu));
 
-	return G_MENU_MODEL(g_steal_pointer(&top_menu));
+	return G_MENU(g_steal_pointer(&top_menu));
 }
 
 static void
@@ -400,7 +402,15 @@ set_view(GspellTextView *gspell_view,
 
 	add_actions(gtk_view, gspell_view);
 
-	g_object_bind_property(gspell_view, "extra-menu", priv->view, "extra-menu", G_BINDING_SYNC_CREATE);
+  /* For GtkSourceView which already has an extra menu */
+  priv->old_menu = gtk_text_view_get_extra_menu (priv->view);
+  if (priv->old_menu != NULL) {
+    /* In reverse to leave the items in the original order */
+    for (gint i = g_menu_model_get_n_items (priv->old_menu) - 1; i >= 0; i--)
+        g_menu_insert_item (priv->gspell_extra_menu, 0, g_menu_item_new_from_model (priv->old_menu, i));
+  }
+
+  g_object_bind_property(gspell_view, "extra-menu", priv->view, "extra-menu", G_BINDING_SYNC_CREATE);
 
 	gesture_click = gtk_gesture_click_new();
 
@@ -818,8 +828,8 @@ gspell_text_view_set_enable_language_menu(GspellTextView *gspell_view,
 
 	gspell_text_view_set_extra_menu(gspell_view,
 					priv->enable_language_menu ?
-					priv->gspell_extra_menu :
-					NULL);
+					G_MENU_MODEL(priv->gspell_extra_menu) :
+					priv->old_menu);
 
 	g_object_notify(G_OBJECT(gspell_view), "enable-language-menu");
 }
