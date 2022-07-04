@@ -74,10 +74,12 @@ struct _GspellTextViewPrivate {
 
 	/* Binding menu to the "extra-menu" of GtkTextView.
 	 * Need to hide or show the gpsell_extra_menu
-	 * NULL when property "language-menu" is false*/
+	 * NULL when property "language-menu" is false */
 	GMenuModel * extra_menu;
 
-  GMenuModel * old_menu;
+  /* Support to keep the previous extra menu.
+   * For example for the extra menu of GtkSourceView */
+  GMenuModel * old_extra_menu;
 
 	GMenuModel  * suggestions_menu;
 
@@ -87,7 +89,6 @@ struct _GspellTextViewPrivate {
 enum {
 	PROP_0,
 	PROP_VIEW,
-	PROP_EXTRA_MENU,
 	PROP_INLINE_SPELL_CHECKING,
 	PROP_ENABLE_LANGUAGE_MENU,
 };
@@ -129,7 +130,7 @@ gspell_text_view_set_extra_menu(GspellTextView *gspell_view,
 
 	priv->extra_menu = extra_menu;
 
-	g_object_notify(G_OBJECT(gspell_view), "extra-menu");
+  gtk_text_view_set_extra_menu (priv->view, priv->extra_menu);
 }
 
 static void
@@ -403,14 +404,12 @@ set_view(GspellTextView *gspell_view,
 	add_actions(gtk_view, gspell_view);
 
   /* For GtkSourceView which already has an extra menu */
-  priv->old_menu = gtk_text_view_get_extra_menu (priv->view);
-  if (priv->old_menu != NULL) {
+  priv->old_extra_menu = gtk_text_view_get_extra_menu (priv->view);
+  if (priv->old_extra_menu != NULL) {
     /* In reverse to leave the items in the original order */
-    for (gint i = g_menu_model_get_n_items (priv->old_menu) - 1; i >= 0; i--)
-        g_menu_insert_item (priv->gspell_extra_menu, 0, g_menu_item_new_from_model (priv->old_menu, i));
+    for (gint i = g_menu_model_get_n_items (priv->old_extra_menu) - 1; i >= 0; i--)
+        g_menu_insert_item (priv->gspell_extra_menu, 0, g_menu_item_new_from_model (priv->old_extra_menu, i));
   }
-
-  g_object_bind_property(gspell_view, "extra-menu", priv->view, "extra-menu", G_BINDING_SYNC_CREATE);
 
 	gesture_click = gtk_gesture_click_new();
 
@@ -437,10 +436,6 @@ gspell_text_view_get_property(GObject    *object,
 	switch (prop_id) {
 	case PROP_VIEW:
 		g_value_set_object(value, gspell_text_view_get_view(gspell_view));
-		break;
-
-	case PROP_EXTRA_MENU:
-		g_value_set_object(value, priv->extra_menu);
 		break;
 
 	case PROP_INLINE_SPELL_CHECKING:
@@ -472,8 +467,6 @@ gspell_text_view_set_property(GObject      *object,
 	case PROP_VIEW:
 		set_view(gspell_view, g_value_get_object(value));
 		break;
-	case PROP_EXTRA_MENU:
-		gspell_text_view_set_extra_menu(gspell_view, g_value_get_object(value));
 	case PROP_INLINE_SPELL_CHECKING:
 		gspell_text_view_set_inline_spell_checking(gspell_view, g_value_get_boolean(value));
 		break;
@@ -529,15 +522,6 @@ gspell_text_view_class_init(GspellTextViewClass *klass)
 							    G_PARAM_READWRITE |
 							    G_PARAM_CONSTRUCT_ONLY |
 							    G_PARAM_STATIC_STRINGS));
-
-
-	g_object_class_install_property(object_class,
-					PROP_EXTRA_MENU,
-					g_param_spec_object("extra-menu",
-							    "extra-menu",
-							    "extra-menu",
-							    G_TYPE_MENU_MODEL,
-							    G_PARAM_STATIC_STRINGS | G_PARAM_READABLE | G_PARAM_WRITABLE));
 
 	/**
 	 * GspellTextView:inline-spell-checking:
@@ -829,7 +813,7 @@ gspell_text_view_set_enable_language_menu(GspellTextView *gspell_view,
 	gspell_text_view_set_extra_menu(gspell_view,
 					priv->enable_language_menu ?
 					G_MENU_MODEL(priv->gspell_extra_menu) :
-					priv->old_menu);
+					priv->old_extra_menu);
 
 	g_object_notify(G_OBJECT(gspell_view), "enable-language-menu");
 }
