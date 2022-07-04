@@ -29,9 +29,8 @@
 #include "gspell-inline-checker-text-buffer.h"
 #include <string.h>
 #include <glib/gi18n-lib.h>
-#include "gspellregion.h"
+#include "gspell-region.h"
 #include "gspell-checker.h"
-#include "gspell-context-menu.h"
 #include "gspell-current-word-policy.h"
 #include "gspell-text-buffer.h"
 #include "gspell-text-iter.h"
@@ -875,43 +874,6 @@ _gspell_inline_checker_text_buffer_correct (GspellInlineCheckerTextBuffer *spell
 	g_free (old_word);
 }
 
-static void
-suggestion_activated_cb (const gchar *suggested_word,
-			 gpointer     user_data)
-{
-	GspellInlineCheckerTextBuffer *spell;
-	GtkTextIter start;
-	GtkTextIter end;
-	gchar *old_word;
-
-	g_return_if_fail (GSPELL_IS_INLINE_CHECKER_TEXT_BUFFER (user_data));
-
-	spell = GSPELL_INLINE_CHECKER_TEXT_BUFFER (user_data);
-
-	if (!get_word_extents_at_click_position (spell, &start, &end))
-	{
-		return;
-	}
-
-	old_word = gtk_text_buffer_get_text (spell->buffer, &start, &end, FALSE);
-
-	gtk_text_buffer_begin_user_action (spell->buffer);
-
-	gtk_text_buffer_delete (spell->buffer, &start, &end);
-	gtk_text_buffer_insert (spell->buffer, &start, suggested_word, -1);
-
-	gtk_text_buffer_end_user_action (spell->buffer);
-
-	if (spell->spell_checker != NULL)
-	{
-		gspell_checker_set_correction (spell->spell_checker,
-					       old_word, -1,
-					       suggested_word, -1);
-	}
-
-	g_free (old_word);
-}
-
 gchar *
 gspell_inline_checker_get_word_at_click_position (GspellInlineCheckerTextBuffer *spell)
 {
@@ -944,29 +906,6 @@ gspell_inline_checker_get_suggestions(GspellInlineCheckerTextBuffer *spell,
 				  	gchar * misspelled_word)
 {
 	return gspell_checker_get_suggestions (spell->spell_checker, misspelled_word, -1);
-}
-
-void
-_gspell_inline_checker_text_buffer_populate_popup (GspellInlineCheckerTextBuffer *spell,
-						   GMenu                       *menu)
-{
-	GMenuItem *menu_item;
-	gchar *misspelled_word;
-
-	/* Prepend suggestions */
-
-	misspelled_word = gspell_inline_checker_get_word_at_click_position(spell);
-
-	if (misspelled_word == NULL)
-		return;
-
-	menu_item = _gspell_context_menu_get_suggestions_menu_item (spell->spell_checker,
-								    misspelled_word,
-								    suggestion_activated_cb,
-								    spell);
-	g_menu_append_item (menu, menu_item);
-
-	g_free (misspelled_word);
 }
 
 static void

@@ -1,11 +1,10 @@
-/* Do not edit: this file is generated from https://git.gnome.org/browse/gtksourceview/plain/gtksourceview/gtksourceregion.c */
+/* Do not edit: this file is generated from https://gitlab.gnome.org/GNOME/gtksourceview/raw/master/gtksourceview/gtksourceregion.c */
 
-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
- * gspellregion.c - GtkTextMark-based region utility
+/*
  * This file is part of GtkSourceView
  *
- * Copyright (C) 2002 Gustavo Giráldez <gustavo.giraldez@gmx.net>
- * Copyright (C) 2016 Sébastien Wilmet <swilmet@gnome.org>
+ * Copyright 2002 Gustavo Giráldez <gustavo.giraldez@gmx.net>
+ * Copyright 2016 Sébastien Wilmet <swilmet@gnome.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,41 +16,37 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
-#include "gspellregion.h"
+#include "gspell-region.h"
 
 /*
- * SECTION:region
- * @Short_description: Region utility
- * @Title: GspellRegion
- * @See_also: #GtkTextBuffer
+ * GspellRegion:
+ * 
+ * Region utility.
  *
- * A #GspellRegion permits to store a group of subregions of a
- * #GtkTextBuffer. #GspellRegion stores the subregions with pairs of
- * #GtkTextMark's, so the region is still valid after insertions and deletions
- * in the #GtkTextBuffer.
+ * A `GspellRegion` permits to store a group of subregions of a
+ * [class@Gtk.TextBuffer]. `GspellRegion` stores the subregions with pairs of
+ * [class@Gtk.TextMark]'s, so the region is still valid after insertions and deletions
+ * in the [class@Gtk.TextBuffer].
  *
- * The #GtkTextMark for the start of a subregion has a left gravity, while the
- * #GtkTextMark for the end of a subregion has a right gravity.
+ * The [class@Gtk.TextMark] for the start of a subregion has a left gravity, while the
+ * [class@Gtk.TextMark] for the end of a subregion has a right gravity.
  *
- * The typical use-case of #GspellRegion is to scan a #GtkTextBuffer chunk by
+ * The typical use-case of `GspellRegion` is to scan a [class@Gtk.TextBuffer] chunk by
  * chunk, not the whole buffer at once to not block the user interface. The
- * #GspellRegion represents in that case the remaining region to scan. You
- * can listen to the #GtkTextBuffer::insert-text and
- * #GtkTextBuffer::delete-range signals to update the #GspellRegion
+ * `GspellRegion` represents in that case the remaining region to scan. You
+ * can listen to the [signal@Gtk.TextBuffer::insert-text] and
+ * [signal@Gtk.TextBuffer::delete-range] signals to update the `GspellRegion`
  * accordingly.
  *
- * To iterate through the subregions, you need to use a #GspellRegionIter,
+ * To iterate through the subregions, you need to use a [struct@RegionIter],
  * for example:
- * |[
+ * ```c
  * GspellRegion *region;
  * GspellRegionIter region_iter;
  *
@@ -73,7 +68,7 @@
  *
  *         _gspell_region_iter_next (&region_iter);
  * }
- * ]|
+ * ```
  */
 
 /* With the gravities of the GtkTextMarks, it is possible for subregions to
@@ -305,10 +300,8 @@ _gspell_region_class_init (GspellRegionClass *klass)
 	/*
 	 * GspellRegion:buffer:
 	 *
-	 * The #GtkTextBuffer. The #GspellRegion has a weak reference to the
+	 * The [class@Gtk.TextBuffer]. The #GspellRegion has a weak reference to the
 	 * buffer.
-	 *
-	 * Since: 3.22
 	 */
 	properties[PROP_BUFFER] =
 		g_param_spec_object ("buffer",
@@ -332,7 +325,6 @@ _gspell_region_init (GspellRegion *region)
  * @buffer: a #GtkTextBuffer.
  *
  * Returns: a new #GspellRegion object for @buffer.
- * Since: 3.22
  */
 GspellRegion *
 _gspell_region_new (GtkTextBuffer *buffer)
@@ -349,7 +341,6 @@ _gspell_region_new (GtkTextBuffer *buffer)
  * @region: a #GspellRegion.
  *
  * Returns: (transfer none) (nullable): the #GtkTextBuffer.
- * Since: 3.22
  */
 GtkTextBuffer *
 _gspell_region_get_buffer (GspellRegion *region)
@@ -409,8 +400,6 @@ _gspell_region_clear_zero_length_subregions (GspellRegion *region)
  * @_end: the end of the subregion.
  *
  * Adds the subregion delimited by @_start and @_end to @region.
- *
- * Since: 3.22
  */
 void
 _gspell_region_add_subregion (GspellRegion   *region,
@@ -531,9 +520,9 @@ _gspell_region_add_subregion (GspellRegion   *region,
  * @region: a #GspellRegion.
  * @region_to_add: (nullable): the #GspellRegion to add to @region, or %NULL.
  *
- * Adds @region_to_add to @region. @region_to_add is not modified.
- *
- * Since: 3.22
+ * Adds @region_to_add to @region. 
+ * 
+ * @region_to_add is not modified.
  */
 void
 _gspell_region_add_region (GspellRegion *region,
@@ -589,8 +578,6 @@ _gspell_region_add_region (GspellRegion *region,
  * @_end: the end of the subregion.
  *
  * Subtracts the subregion delimited by @_start and @_end from @region.
- *
- * Since: 3.22
  */
 void
 _gspell_region_subtract_subregion (GspellRegion   *region,
@@ -674,7 +661,7 @@ _gspell_region_subtract_subregion (GspellRegion   *region,
 							       FALSE);
 
 			/* No further processing needed. */
-			DEBUG (g_message ("subregion splitted"));
+			DEBUG (g_message ("subregion split"));
 
 			return;
 		}
@@ -762,10 +749,9 @@ _gspell_region_subtract_subregion (GspellRegion   *region,
  * @region_to_subtract: (nullable): the #GspellRegion to subtract from
  *   @region, or %NULL.
  *
- * Subtracts @region_to_subtract from @region. @region_to_subtract is not
- * modified.
+ * Subtracts @region_to_subtract from @region.
  *
- * Since: 3.22
+ * @region_to_subtract is not modified.
  */
 void
 _gspell_region_subtract_region (GspellRegion *region,
@@ -813,10 +799,11 @@ _gspell_region_subtract_region (GspellRegion *region,
  * _gspell_region_is_empty:
  * @region: (nullable): a #GspellRegion, or %NULL.
  *
- * Returns whether the @region is empty. A %NULL @region is considered empty.
+ * Returns whether the @region is empty. 
+ * 
+ * A %NULL @region is considered empty.
  *
  * Returns: whether the @region is empty.
- * Since: 3.22
  */
 gboolean
 _gspell_region_is_empty (GspellRegion *region)
@@ -873,7 +860,6 @@ _gspell_region_is_empty (GspellRegion *region)
  *
  * Returns: %TRUE if @start and @end have been set successfully (if non-%NULL),
  *   or %FALSE if the @region is empty.
- * Since: 3.22
  */
 gboolean
 _gspell_region_get_bounds (GspellRegion *region,
@@ -916,11 +902,12 @@ _gspell_region_get_bounds (GspellRegion *region,
  * @_end: the end of the subregion.
  *
  * Returns the intersection between @region and the subregion delimited by
- * @_start and @_end. @region is not modified.
+ * @_start and @_end. 
+ * 
+ * @region is not modified.
  *
  * Returns: (transfer full) (nullable): the intersection as a new
  *   #GspellRegion.
- * Since: 3.22
  */
 GspellRegion *
 _gspell_region_intersect_subregion (GspellRegion   *region,
@@ -1087,12 +1074,12 @@ _gspell_region_intersect_subregion (GspellRegion   *region,
  * @region1: (nullable): a #GspellRegion, or %NULL.
  * @region2: (nullable): a #GspellRegion, or %NULL.
  *
- * Returns the intersection between @region1 and @region2. @region1 and
- * @region2 are not modified.
+ * Returns the intersection between @region1 and @region2. 
+ *
+ * @region1 and @region2 are not modified.
  *
  * Returns: (transfer full) (nullable): the intersection as a #GspellRegion
  *   object.
- * Since: 3.22
  */
 GspellRegion *
 _gspell_region_intersect_region (GspellRegion *region1,
@@ -1193,10 +1180,9 @@ invalid:
  * @region: a #GspellRegion.
  * @iter: (out): iterator to initialize to the first subregion.
  *
- * Initializes a #GspellRegionIter to the first subregion of @region. If
- * @region is empty, @iter will be initialized to the end iterator.
+ * Initializes a [struct@RegionIter] to the first subregion of @region. 
  *
- * Since: 3.22
+ * If @region is empty, @iter will be initialized to the end iterator.
  */
 void
 _gspell_region_get_start_region_iter (GspellRegion     *region,
@@ -1223,7 +1209,6 @@ _gspell_region_get_start_region_iter (GspellRegion     *region,
  * @iter: a #GspellRegionIter.
  *
  * Returns: whether @iter is the end iterator.
- * Since: 3.22
  */
 gboolean
 _gspell_region_iter_is_end (GspellRegionIter *iter)
@@ -1246,7 +1231,6 @@ _gspell_region_iter_is_end (GspellRegionIter *iter)
  *
  * Returns: %TRUE if @iter moved and is dereferenceable, or %FALSE if @iter has
  *   been set to the end iterator.
- * Since: 3.22
  */
 gboolean
 _gspell_region_iter_next (GspellRegionIter *iter)
@@ -1277,7 +1261,6 @@ _gspell_region_iter_next (GspellRegionIter *iter)
  *
  * Returns: %TRUE if @start and @end have been set successfully (if non-%NULL),
  *   or %FALSE if @iter is the end iterator or if the region is empty.
- * Since: 3.22
  */
 gboolean
 _gspell_region_iter_get_subregion (GspellRegionIter *iter,
@@ -1332,7 +1315,6 @@ _gspell_region_iter_get_subregion (GspellRegionIter *iter,
  *
  * Returns: (transfer full) (nullable): a string represention of @region. Free
  *   with g_free() when no longer needed.
- * Since: 3.22
  */
 gchar *
 _gspell_region_to_string (GspellRegion *region)

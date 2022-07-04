@@ -3,7 +3,7 @@ subdir('resources')
 gspell_sources += [
   'gspell-checker.c',
   'gspell-checker-dialog.c',
-  'gspell-context-menu.c',
+  # 'gspell-context-menu.c',
   'gspell-current-word-policy.c',
   # 'gspell-entry-buffer.c',
   # 'gspell-entry.c',
@@ -17,7 +17,7 @@ gspell_sources += [
   'gspell-language-chooser-dialog.c',
   'gspell-navigator.c',
   'gspell-navigator-text-view.c',
-  'gspellregion.c',
+  'gspell-region.c',
   'gspell-text-buffer.c',
   'gspell-text-iter.c',
   'gspell-text-view.c',
