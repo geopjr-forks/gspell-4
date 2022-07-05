@@ -27,7 +27,7 @@
 #include "gspell-checker.h"
 #include "gspell-language.h"
 #include "gspell-text-buffer.h"
-#include "gspell-suggestion-menu.h"
+#include "gspell-menu.h"
 
 /**
  * SECTION:text-view
@@ -72,14 +72,12 @@ struct _GspellTextViewPrivate {
 	 * so you don't have to recreate it every time you change the "language-menu" property */
 	GMenu * gspell_extra_menu;
 
-	/* Binding menu to the "extra-menu" of GtkTextView.
-	 * Need to hide or show the gpsell_extra_menu
-	 * NULL when property "language-menu" is false */
 	GMenuModel * extra_menu;
 
-  /* Support to keep the previous extra menu.
-   * For example for the extra menu of GtkSourceView */
-  GMenuModel * old_extra_menu;
+	/* Extra menu back-up
+	 * Support to keep the previous extra menu.
+	 * For example for the extra menu of GtkSourceView */
+	GMenuModel * old_extra_menu;
 
 	GMenuModel  * suggestions_menu;
 
@@ -96,8 +94,6 @@ enum {
 #define GSPELL_TEXT_VIEW_KEY "gspell-text-view-key"
 
 G_DEFINE_TYPE_WITH_PRIVATE(GspellTextView, gspell_text_view, G_TYPE_OBJECT)
-
-static GMenuModel * gspell_get_language_menu_new();
 
 static void
 create_inline_checker(GspellTextView *gspell_view)
@@ -130,7 +126,7 @@ gspell_text_view_set_extra_menu(GspellTextView *gspell_view,
 
 	priv->extra_menu = extra_menu;
 
-  gtk_text_view_set_extra_menu (priv->view, priv->extra_menu);
+	gtk_text_view_set_extra_menu(priv->view, priv->extra_menu);
 }
 
 static void
@@ -169,8 +165,8 @@ notify_buffer_cb(GtkTextView    *gtk_view,
 }
 
 static void
-language_activated_cb(const GspellLanguage *lang,
-		      gpointer user_data)
+gspell_text_view_set_language(const GspellLanguage *lang,
+			      gpointer user_data)
 {
 	GspellTextView *gspell_view;
 	GspellTextViewPrivate *priv;
@@ -211,9 +207,9 @@ get_current_language(GspellTextView *gspell_view)
 }
 
 static void
-spelling_ignore_all(GSimpleAction *action,
-		    GVariant      *value,
-		    gpointer user_data)
+spelling_ignore_all_activate(GSimpleAction *action,
+			     GVariant      *value,
+			     gpointer user_data)
 {
 	GtkTextBuffer *gtk_buffer;
 	GspellTextBuffer *gspell_buffer;
@@ -230,9 +226,9 @@ spelling_ignore_all(GSimpleAction *action,
 }
 
 static void
-spelling_add(GSimpleAction *action,
-	     GVariant      *value,
-	     gpointer user_data)
+spelling_add_activate(GSimpleAction *action,
+		      GVariant      *value,
+		      gpointer user_data)
 {
 	GtkTextBuffer *gtk_buffer;
 	GspellTextBuffer *gspell_buffer;
@@ -249,9 +245,9 @@ spelling_add(GSimpleAction *action,
 }
 
 static void
-spelling_correct(GSimpleAction *action,
-		 GVariant      *value,
-		 gpointer user_data)
+spelling_correct_activate(GSimpleAction *action,
+			  GVariant      *value,
+			  gpointer user_data)
 {
 	GspellTextViewPrivate *priv;
 	priv = gspell_text_view_get_instance_private(GSPELL_TEXT_VIEW(user_data));
@@ -266,9 +262,9 @@ spelling_correct(GSimpleAction *action,
 static GSimpleActionGroup *action_group = NULL;
 
 static void
-change_default_language(GSimpleAction *action,
-			GVariant *value,
-			gpointer user_data)
+change_language_state(GSimpleAction *action,
+		      GVariant *value,
+		      gpointer user_data)
 {
 	const char *code;
 
@@ -276,43 +272,43 @@ change_default_language(GSimpleAction *action,
 
 	g_simple_action_set_state(action, value);
 
-	language_activated_cb(gspell_language_lookup(code), GSPELL_TEXT_VIEW(user_data));
+	gspell_text_view_set_language(gspell_language_lookup(code), GSPELL_TEXT_VIEW(user_data));
 }
 
 static void
-gspell_suggestions_action_set_enable(gboolean enabled)
+set_menu_suggestions_actions_enable(gboolean enabled)
 {
 	GAction * action;
 
-	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "has-suggestions");
+	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), GSPELL_ACTION_HAS_SUGGESTIONS);
 	g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 
-	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "add");
+	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), GSPELL_ACTION_ADD);
 	g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 
-	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "ignore-all");
+	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), GSPELL_ACTION_IGNORE_ALL);
 	g_simple_action_set_enabled(G_SIMPLE_ACTION(action), enabled);
 }
 
 static void
-add_actions(GtkTextView    *gtk_view,
-	    GspellTextView *gspell_view)
+view_insert_actions(GspellTextView *gspell_view,
+		    GtkTextView    *gtk_view)
 {
 	action_group = g_simple_action_group_new();
 
 	GActionEntry entries[] = {
-		{ "has-suggestions", NULL },
-		{ "language", NULL, "s", "''", change_default_language },
-		{ "correct", spelling_correct, "s" },
-		{ "add", spelling_add },
-		{ "ignore-all", spelling_ignore_all },
+		{ GSPELL_ACTION_HAS_SUGGESTIONS, NULL },
+		{ GSPELL_ACTION_LANGUAGE, NULL, "s", "''", change_language_state },
+		{ GSPELL_ACTION_CORRECT, spelling_correct_activate, "s" },
+		{ GSPELL_ACTION_ADD, spelling_add_activate },
+		{ GSPELL_ACTION_IGNORE_ALL, spelling_ignore_all_activate },
 	};
 
 	g_action_map_add_action_entries(G_ACTION_MAP(action_group), entries, G_N_ELEMENTS(entries), gspell_view);
 
-	gspell_suggestions_action_set_enable(FALSE);
+	gtk_widget_insert_action_group(GTK_WIDGET(gtk_view), GSPELL_ACTION_GROUP, G_ACTION_GROUP(action_group));
 
-	gtk_widget_insert_action_group(GTK_WIDGET(gtk_view), "spelling", G_ACTION_GROUP(action_group));
+	set_menu_suggestions_actions_enable(FALSE);
 }
 
 /* When the user right-clicks on a word, they want to check that word.
@@ -343,40 +339,7 @@ on_pressed_cb(GtkGestureClick* self,
 		}
 	}
 
-	gspell_suggestions_action_set_enable(priv->misspelled_word != NULL);
-}
-
-static GMenu *
-gspell_text_view_extra_menu_new(GspellTextView *gspell_view)
-{
-	GspellTextViewPrivate *priv;
-
-	priv = gspell_text_view_get_instance_private(gspell_view);
-
-	if (priv->suggestions_menu == NULL)
-		priv->suggestions_menu = gspell_suggestion_menu_new();
-
-	g_autoptr(GMenu) top_menu = g_menu_new();
-
-	g_autoptr(GMenu) language_menu = g_menu_new();
-	g_autoptr(GMenuItem) languages_item = g_menu_item_new_submenu(_("_Language"), G_MENU_MODEL(gspell_get_language_menu_new()));
-	g_menu_append_item(language_menu, languages_item);
-
-	g_autoptr(GMenuItem) suggestions_items = g_menu_item_new_submenu(_("_Spelling Suggestions…"), G_MENU_MODEL(priv->suggestions_menu));
-  g_menu_item_set_detailed_action(suggestions_items, "spelling.has-suggestions");
-
-	g_autoptr(GMenuItem) add_item = g_menu_item_new(_("_Add"), "spelling.add");
-	g_autoptr(GMenuItem) ignore_item = g_menu_item_new(_("_Ignore All"), "spelling.ignore-all");
-
-	g_autoptr(GMenu) spelling_menu = g_menu_new();
-	g_menu_append_item(spelling_menu, suggestions_items);
-	g_menu_append_item(spelling_menu, add_item);
-	g_menu_append_item(spelling_menu, ignore_item);
-
-	g_menu_append_section(top_menu, NULL, G_MENU_MODEL(language_menu));
-	g_menu_append_section(top_menu, NULL, G_MENU_MODEL(spelling_menu));
-
-	return G_MENU(g_steal_pointer(&top_menu));
+	set_menu_suggestions_actions_enable(priv->misspelled_word != NULL);
 }
 
 static void
@@ -401,16 +364,17 @@ set_view(GspellTextView *gspell_view,
 				gspell_view,
 				0);
 
-	add_actions(gtk_view, gspell_view);
+	view_insert_actions(gspell_view, gtk_view);
 
-  /* For GtkSourceView which already has an extra menu */
-  GMenuModel * old_extra_menu = gtk_text_view_get_extra_menu (priv->view);
-  priv->old_extra_menu = old_extra_menu ? g_object_ref(old_extra_menu) : NULL;
-  if (priv->old_extra_menu != NULL) {
-    /* In reverse to leave the items in the original order */
-    for (gint i = g_menu_model_get_n_items (priv->old_extra_menu) - 1; i >= 0; i--)
-        g_menu_insert_item (priv->gspell_extra_menu, 0, g_menu_item_new_from_model (priv->old_extra_menu, i));
-  }
+	/* For GtkSourceView which already has an extra menu */
+	GMenuModel * old_extra_menu = gtk_text_view_get_extra_menu(priv->view);
+	if (old_extra_menu) {
+		priv->old_extra_menu = g_object_ref(old_extra_menu);
+		/* In reverse to leave the items in the original order */
+		for (gint i = g_menu_model_get_n_items(priv->old_extra_menu) - 1; i >= 0; i--) {
+			g_menu_insert_item(priv->gspell_extra_menu, 0, g_menu_item_new_from_model(priv->old_extra_menu, i));
+		}
+	}
 
 	gesture_click = gtk_gesture_click_new();
 
@@ -429,10 +393,7 @@ gspell_text_view_get_property(GObject    *object,
 			      GValue     *value,
 			      GParamSpec *pspec)
 {
-	GspellTextViewPrivate *priv;
 	GspellTextView *gspell_view = GSPELL_TEXT_VIEW(object);
-
-	priv = gspell_text_view_get_instance_private(gspell_view);
 
 	switch (prop_id) {
 	case PROP_VIEW:
@@ -459,10 +420,7 @@ gspell_text_view_set_property(GObject      *object,
 			      const GValue *value,
 			      GParamSpec   *pspec)
 {
-	GspellTextViewPrivate *priv;
 	GspellTextView *gspell_view = GSPELL_TEXT_VIEW(object);
-
-	priv = gspell_text_view_get_instance_private(gspell_view);
 
 	switch (prop_id) {
 	case PROP_VIEW:
@@ -496,7 +454,8 @@ gspell_text_view_dispose(GObject *object)
 
 	priv->view = NULL;
 	g_clear_object(&priv->inline_checker);
-
+	g_clear_object(&priv->old_extra_menu);
+	g_clear_object(&priv->gspell_extra_menu);
 	G_OBJECT_CLASS(gspell_text_view_parent_class)->dispose(object);
 }
 
@@ -556,28 +515,6 @@ gspell_text_view_class_init(GspellTextViewClass *klass)
 							     G_PARAM_STATIC_STRINGS));
 }
 
-GMenuModel *
-gspell_get_language_menu_new()
-{
-	g_autoptr(GMenu) menu = g_menu_new();
-	const GList * l;
-	const GList * languages = gspell_language_get_available();
-	for (l = languages; l != NULL; l = l->next) {
-		const GspellLanguage *lang = l->data;
-		const gchar *lang_name;
-		const gchar *code;
-		g_autoptr(GMenuItem) menu_item;
-
-		lang_name = gspell_language_get_name(lang);
-		code = gspell_language_get_code(lang);
-		menu_item = g_menu_item_new(lang_name, NULL);
-		g_menu_item_set_action_and_target(menu_item, "spelling.language", "s", code);
-		g_menu_append_item(menu, menu_item);
-	}
-
-	return G_MENU_MODEL(g_steal_pointer(&menu));
-}
-
 static void
 gspell_text_view_init(GspellTextView *gspell_view)
 {
@@ -587,7 +524,9 @@ gspell_text_view_init(GspellTextView *gspell_view)
 
 	priv = gspell_text_view_get_instance_private(gspell_view);
 
-	priv->gspell_extra_menu = gspell_text_view_extra_menu_new(gspell_view);
+	priv->suggestions_menu = gspell_suggestion_menu_new();
+	priv->gspell_extra_menu = gspell_menu_new_from_suggestion_menu(GSPELL_SUGGESTION_MENU(priv->suggestions_menu));
+	priv->old_extra_menu = NULL;
 }
 
 /**
@@ -784,15 +723,12 @@ gspell_text_view_set_enable_language_menu(GspellTextView *gspell_view,
 {
 	GspellTextViewPrivate *priv;
 
-	GMenu * spelling_menu;
 	g_return_if_fail(GSPELL_IS_TEXT_VIEW(gspell_view));
 
 	priv = gspell_text_view_get_instance_private(gspell_view);
 
 	enable_language_menu = enable_language_menu != FALSE;
 
-
-	spelling_menu = g_menu_new();
 	if (priv->enable_language_menu == enable_language_menu)
 		return;
 
@@ -807,7 +743,7 @@ gspell_text_view_set_enable_language_menu(GspellTextView *gspell_view,
 
 		action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "language");
 		value = g_variant_ref_sink(g_variant_new_string(gspell_language_get_code(current_language)));
-		change_default_language(G_SIMPLE_ACTION(action), value, gspell_view);
+		change_language_state(G_SIMPLE_ACTION(action), value, gspell_view);
 		g_variant_unref(value);
 	}
 
@@ -820,7 +756,3 @@ gspell_text_view_set_enable_language_menu(GspellTextView *gspell_view,
 }
 
 /* ex:set ts=8 noet: */
-
-
-
-

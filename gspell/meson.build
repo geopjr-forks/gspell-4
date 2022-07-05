@@ -3,7 +3,6 @@ subdir('resources')
 gspell_sources += [
   'gspell-checker.c',
   'gspell-checker-dialog.c',
-  # 'gspell-context-menu.c',
   'gspell-current-word-policy.c',
   # 'gspell-entry-buffer.c',
   # 'gspell-entry.c',
@@ -22,10 +21,9 @@ gspell_sources += [
   'gspell-text-iter.c',
   'gspell-text-view.c',
   'gspell-utils.c',
-
+  'gspell-menu.c',
   'gspell-checker-provider.c',
   'enchant/gspell-enchant-checker.c',
-  'gspell-suggestion-menu.c'
 ]
 
 gspell_headers = [
@@ -42,7 +40,6 @@ gspell_headers = [
   'gspell-navigator-text-view.h',
   'gspell-text-buffer.h',
   'gspell-text-view.h',
-
   'gspell-checker-provider.h',
   'enchant/gspell-enchant-checker.h'
 ]
