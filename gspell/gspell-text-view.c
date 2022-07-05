@@ -404,7 +404,8 @@ set_view(GspellTextView *gspell_view,
 	add_actions(gtk_view, gspell_view);
 
   /* For GtkSourceView which already has an extra menu */
-  priv->old_extra_menu =  g_object_ref ( gtk_text_view_get_extra_menu (priv->view) );
+  GMenuModel * old_extra_menu = gtk_text_view_get_extra_menu (priv->view);
+  priv->old_extra_menu = old_extra_menu ? g_object_ref(old_extra_menu) : NULL;
   if (priv->old_extra_menu != NULL) {
     /* In reverse to leave the items in the original order */
     for (gint i = g_menu_model_get_n_items (priv->old_extra_menu) - 1; i >= 0; i--)
