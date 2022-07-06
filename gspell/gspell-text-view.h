@@ -1,7 +1,8 @@
 /*
  * This file is part of gspell, a spell-checking library.
  *
- * Copyright 2015, 2016 - Sébastien Wilmet
+ * Copyright 2015, 2016, 2017 - Sébastien Wilmet
+ * Copyright 2022 - otrocodigo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,3 +73,4 @@ G_END_DECLS
 #endif /* GSPELL_TEXT_VIEW_H */
 
 /* ex:set ts=8 noet: */
+

@@ -2,6 +2,7 @@
  * This file is part of gspell, a spell-checking library.
  *
  * Copyright 2015, 2016, 2017 - Sébastien Wilmet
+ * Copyright 2022 - otrocodigo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +25,7 @@
 #include "gspell-text-view.h"
 #include <glib/gi18n-lib.h>
 #include "gspell-inline-checker-text-buffer.h"
-#include "gspell-checker.h"
+#include "enchant/gspell-enchant-checker.h"
 #include "gspell-language.h"
 #include "gspell-text-buffer.h"
 #include "gspell-menu.h"
@@ -589,7 +590,7 @@ gspell_text_view_get_from_gtk_text_view(GtkTextView *gtk_view)
  * GtkTextBuffer *gtk_buffer;
  * GspellTextBuffer *gspell_buffer;
  *
- * checker = gspell_checker_new (NULL);
+ * checker = gspell_enchant_checker_new (NULL);
  * gtk_buffer = gtk_text_view_get_buffer (gtk_view);
  * gspell_buffer = gspell_text_buffer_get_from_gtk_text_buffer (gtk_buffer);
  * gspell_text_buffer_set_spell_checker (gspell_buffer, checker);
@@ -614,7 +615,7 @@ gspell_text_view_basic_setup(GspellTextView *gspell_view)
 
 	priv = gspell_text_view_get_instance_private(gspell_view);
 
-	checker = gspell_checker_new(NULL);
+	checker = gspell_enchant_checker_new(NULL);
 	gtk_buffer = gtk_text_view_get_buffer(priv->view);
 	gspell_buffer = gspell_text_buffer_get_from_gtk_text_buffer(gtk_buffer);
 	gspell_text_buffer_set_spell_checker(gspell_buffer, checker);
@@ -756,3 +757,4 @@ gspell_text_view_set_enable_language_menu(GspellTextView *gspell_view,
 }
 
 /* ex:set ts=8 noet: */
+

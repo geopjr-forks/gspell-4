@@ -4,8 +4,12 @@ option('demo',
 option('tests',
        type: 'boolean', value: true,
        description: 'Build tests (requires umockdev)')
-option('docs',
-       description: 'Build API reference for ATK using GTK-Doc',
+option('gtk_doc',
+       description: 'Build API reference for GSPELL using GTK-Doc',
+       type: 'boolean',
+       value: true)
+option('gi_doc',
+       description: 'Build API reference for GSPELL using GI-Docgen',
        type: 'boolean',
        value: true)
 option('vapi',
@@ -14,4 +18,4 @@ option('vapi',
 option('introspection',
        description: 'Whether to build introspection files',
        type: 'boolean',
-       value: false)
+       value: true)

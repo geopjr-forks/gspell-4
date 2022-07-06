@@ -177,7 +177,7 @@ test_spell_init (TestSpell *spell)
 	spell->view = GTK_TEXT_VIEW (gtk_text_view_new ());
 	gtk_buffer = gtk_text_view_get_buffer (spell->view);
 
-	checker = gspell_checker_new (NULL);
+	checker = gspell_enchant_checker_new (NULL);
 	gspell_buffer = gspell_text_buffer_get_from_gtk_text_buffer (gtk_buffer);
 	gspell_text_buffer_set_spell_checker (gspell_buffer, checker);
 	g_object_unref (checker);

@@ -2,6 +2,7 @@
  * This file is part of gspell, a spell-checking library.
  *
  * Copyright 2015 - Sébastien Wilmet <swilmet@gnome.org>
+ * Copyright 2022 - otrocodigo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +25,8 @@
 
 #include <gspell/gspell-checker.h>
 #include <gspell/gspell-checker-dialog.h>
-#include <gspell/gspell-entry.h>
-#include <gspell/gspell-entry-buffer.h>
+// #include <gspell/gspell-entry.h>
+// #include <gspell/gspell-entry-buffer.h>
 #include <gspell/gspell-language.h>
 #include <gspell/gspell-language-chooser.h>
 #include <gspell/gspell-language-chooser-button.h>

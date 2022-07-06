@@ -31,6 +31,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include <gspell/gspell.h>
+#include <gtksourceview/gtksource.h>
 
 #define GSPELL_TYPE_APP_CONTENT (gspell_app_content_get_type ())
 G_DECLARE_FINAL_TYPE (GspellAppContent, gspell_app_content,
@@ -54,6 +55,7 @@ get_spell_checker (GspellAppContent *content)
 
 	gtk_buffer = gtk_text_view_get_buffer (content->view);
 	gspell_buffer = gspell_text_buffer_get_from_gtk_text_buffer (gtk_buffer);
+
 
 	return gspell_text_buffer_get_spell_checker (gspell_buffer);
 }
@@ -106,10 +108,11 @@ init_view (GspellAppContent *content)
 
 	g_assert (content->view == NULL);
 
-	content->view = GTK_TEXT_VIEW (gtk_text_view_new ());
+	content->view = GTK_TEXT_VIEW (gtk_source_view_new ());
 
 	gspell_view = gspell_text_view_get_from_gtk_text_view (content->view);
 	gspell_text_view_basic_setup (gspell_view);
+	/* gspell_text_view_set_enable_language_menu (gspell_view, FALSE); */
 
 	gtk_text_view_set_wrap_mode (content->view, GTK_WRAP_WORD);
 
@@ -313,5 +316,6 @@ main (int    argc,
 }
 
 /* ex:set ts=8 noet: */
+
 
 

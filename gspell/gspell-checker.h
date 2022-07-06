@@ -1,8 +1,9 @@
 /*
  * This file is part of gspell, a spell-checking library.
  *
- * Copyright 2002-2006 - Paolo Maggi
+ * Copyright 2002 - Paolo Maggi
  * Copyright 2015 - Sébastien Wilmet
+ * Copyright 2022 - otrocodigo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,18 +27,15 @@
 #endif
 
 #include <glib-object.h>
-#include <enchant.h>
 #include <gspell/gspell-language.h>
 #include <gspell/gspell-version.h>
 
 G_BEGIN_DECLS
 
-#define GSPELL_TYPE_CHECKER (gspell_checker_get_type ())
+#define GSPELL_TYPE_CHECKER (gspell_checker_get_type())
 
 GSPELL_AVAILABLE_IN_ALL
-G_DECLARE_DERIVABLE_TYPE (GspellChecker, gspell_checker,
-			  GSPELL, CHECKER,
-			  GObject)
+G_DECLARE_INTERFACE (GspellChecker, gspell_checker, GSPELL, CHECKER, GObject)
 
 /**
  * GSPELL_CHECKER_ERROR:
@@ -62,9 +60,39 @@ typedef enum _GspellCheckerError
 	GSPELL_CHECKER_ERROR_NO_LANGUAGE_SET,
 } GspellCheckerError;
 
-struct _GspellCheckerClass
+struct _GspellCheckerInterface
 {
-	GObjectClass parent_class;
+	GTypeInterface parent_interface;
+
+	gboolean (* check_word)		(GspellChecker  *checker,
+					 const gchar    *word,
+					 gssize          word_length,
+					 GError        **error);
+
+	GSList * (* get_suggestions)	(GspellChecker *checker,
+					 const gchar   *word,
+					 gssize         word_length);
+
+	void (* add_word_to_session)	(GspellChecker *checker,
+					 const gchar   *word,
+					 gssize         word_length);
+
+	void (* add_word_to_personal)	(GspellChecker *checker,
+					 const gchar   *word,
+					 gssize         word_length);
+
+	void (* set_correction)		(GspellChecker *checker,
+					 const gchar   *word,
+					 gssize         word_length,
+					 const gchar   *replacement,
+					 gssize         replacement_length);
+
+	void (* clear_session)		(GspellChecker *checker);
+
+	void (* set_language)		(GspellChecker        *checker,
+					 const GspellLanguage *language);
+
+	const GspellLanguage * (*get_language)	(GspellChecker *checker);
 
 	/* Signals */
 	void (* word_added_to_personal)	(GspellChecker *checker,
@@ -83,15 +111,11 @@ GSPELL_AVAILABLE_IN_ALL
 GQuark		gspell_checker_error_quark		(void);
 
 GSPELL_AVAILABLE_IN_ALL
-GspellChecker *	gspell_checker_new			(const GspellLanguage *language);
-
-GSPELL_AVAILABLE_IN_ALL
 void		gspell_checker_set_language		(GspellChecker        *checker,
 							 const GspellLanguage *language);
 
 GSPELL_AVAILABLE_IN_ALL
-const GspellLanguage *
-		gspell_checker_get_language		(GspellChecker *checker);
+const GspellLanguage * gspell_checker_get_language	(GspellChecker *checker);
 
 GSPELL_AVAILABLE_IN_ALL
 gboolean	gspell_checker_check_word		(GspellChecker  *checker,
@@ -124,11 +148,21 @@ void		gspell_checker_set_correction		(GspellChecker *checker,
 							 const gchar   *replacement,
 							 gssize         replacement_length);
 
-GSPELL_AVAILABLE_IN_1_6
-EnchantDict *	gspell_checker_get_enchant_dict		(GspellChecker *checker);
+/* Signals */
+GSPELL_AVAILABLE_IN_ALL
+void 		gspell_checker_word_added_to_personal	(GspellChecker *checker,
+				 					const gchar   *word);
+
+GSPELL_AVAILABLE_IN_ALL
+void 		gspell_checker_word_added_to_session	(GspellChecker *checker,
+			 						const gchar   *word);
+
+GSPELL_AVAILABLE_IN_ALL
+void 		gspell_checker_session_cleared		(GspellChecker *checker);
 
 G_END_DECLS
 
 #endif  /* GSPELL_CHECKER_H */
 
 /* ex:set ts=8 noet: */
+

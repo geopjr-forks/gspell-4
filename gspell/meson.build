@@ -22,7 +22,6 @@ gspell_sources += [
   'gspell-text-view.c',
   'gspell-utils.c',
   'gspell-menu.c',
-  'gspell-checker-provider.c',
   'enchant/gspell-enchant-checker.c',
 ]
 
@@ -30,8 +29,8 @@ gspell_headers = [
   'gspell.h',
   'gspell-checker.h',
   'gspell-checker-dialog.h',
-  'gspell-entry.h',
-  'gspell-entry-buffer.h',
+  # 'gspell-entry.h',
+  # 'gspell-entry-buffer.h',
   'gspell-language.h',
   'gspell-language-chooser.h',
   'gspell-language-chooser-button.h',
@@ -40,7 +39,6 @@ gspell_headers = [
   'gspell-navigator-text-view.h',
   'gspell-text-buffer.h',
   'gspell-text-view.h',
-  'gspell-checker-provider.h',
   'enchant/gspell-enchant-checker.h'
 ]
 
@@ -102,8 +100,8 @@ if get_option('introspection')
     nsversion: gspell_api_version,
     identifier_prefix: 'Gspell',
     symbol_prefix: 'gspell',
-    export_packages: 'gspell',
-    includes: [ 'GObject-2.0', 'Gtk-3.0' ],
+    export_packages: gspell_api_name,
+    includes: [ 'GObject-2.0', 'Gtk-4.0' ],
     install: true,
     extra_args: [
       '--quiet',
@@ -118,7 +116,7 @@ if get_option('introspection')
     gspell_vapi_deps = [
       'gio-2.0',
       'glib-2.0',
-      'gtk+-3.0'
+      'gtk4'
     ]
 
     gspeel_vapi_dep = gnome.generate_vapi(
@@ -137,11 +135,10 @@ libgspell_dep = declare_dependency(link_with: libgspell,
 )
 
 pkgconfig.generate(libgspell,
-  name: 'gspell',
+  name: gspell_api_name,
   filebase: gspell_api_name,
   description: 'Spell-checking for GTK applications',
   subdirs: gspell_api_name,
-  filebase: 'gspell',
   requires: [glib_dep, gtk_dep, enchant_dep],
   requires_private: [icu_dep]
 )

@@ -34,7 +34,7 @@ create_buffer (void)
 	lang = gspell_language_lookup ("en_US");
 	g_assert_true (lang != NULL);
 
-	checker = gspell_checker_new (lang);
+	checker = gspell_enchant_checker_new (lang);
 	gspell_text_buffer_set_spell_checker (gspell_buffer, checker);
 	g_object_unref (checker);
 

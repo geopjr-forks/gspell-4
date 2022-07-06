@@ -5,7 +5,7 @@ main (gint    argc,
       gchar **argv)
 {
 
-  GspellCheckerProvider *checker;
+  GspellChecker *checker;
 	const GspellLanguage *language;
   gboolean correctly_spelled;
 
@@ -14,19 +14,19 @@ main (gint    argc,
 
   GError *error = NULL;
 
-  correctly_spelled = gspell_checker_provider_check_word (checker, "helxi", -1, &error);
+  correctly_spelled = gspell_checker_check_word (checker, "helxi", -1, &error);
 
   printf("correctly_spelled: %d\n", correctly_spelled);
 
   GSList * l;
-  GSList * suggestions = gspell_checker_provider_get_suggestions (checker, "helxi", -1);
+  GSList * suggestions = gspell_checker_get_suggestions (checker, "helxi", -1);
 
   for (l = suggestions; l != NULL ; l = l->next)
     {
       /* printf("%s\n", (gchar *) l->data); */
     }
 
-  gspell_checker_provider_add_word_to_personal (checker, "helxi", -1);
+  gspell_checker_add_word_to_personal (checker, "helxi", -1);
 
   return 0;
 }

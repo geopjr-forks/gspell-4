@@ -2,6 +2,7 @@
  * This file is part of gspell, a spell-checking library.
  *
  * Copyright 2015, 2016 - Sébastien Wilmet <swilmet@gnome.org>
+ * Copyright 2022 - otrocodigo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

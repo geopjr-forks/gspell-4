@@ -4,11 +4,13 @@ doc_module = gspell_api_name
 
 ignore_headers = [
   'gspell.h',
-  'gspellregion.h',
+  'gspell-region.h',
   'gspell-checker-private.h',
   'gspell-context-menu.h',
   'gspell-current-word-policy.h',
   'gspell-entry-private.h',
+  'gspell-entry-buffer.h',
+  'gspell-entry.h',
   'gspell-entry-utils.h',
   'gspell-icu.h',
   'gspell-inline-checker-text-buffer.h',
