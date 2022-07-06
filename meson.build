@@ -1,5 +1,5 @@
 project('gspell', 'c',
-        version: '1.11.1',
+        version: '4.0.1',
         license: 'LGPL-2.1-or-later',
         default_options: [
           'buildtype=debugoptimized',
@@ -24,7 +24,7 @@ gspell_lt_revision='1'
 gspell_lt_age='3'
 gspell_lt_version='@0@:@1@:@2@'.format(gspell_lt_current, gspell_lt_revision, gspell_lt_age)
 
-gspell_api_version='1'
+gspell_api_version='4'
 gspell_api_name = 'gspell-@0@'.format(gspell_api_version)
 gspell_api_path = '@0@/gspell'.format(gspell_api_name)
 
