@@ -390,12 +390,12 @@ create_new_dictionary (GspellEnchantChecker *checker)
  *
  * Gets the EnchantDict currently used by @checker.
  *
- * #GspellEnchantChecker re-creates a new #EnchantDict when the #GspellChecker:language
+ * #GspellEnchantChecker re-creates a new EnchantDict when the #GspellChecker:language
  * is changed and when the session is cleared.
  *
- * Returns: (transfer none) (nullable): the EnchantDict currently used by
+ * Returns: (transfer none) (nullable): the #EnchantDict currently used by
  * @checker.
- * Since: 1.6
+ * Since: 4.0
  */
 EnchantDict *
 gspell_enchant_checker_get_dict (GspellEnchantChecker * enchant_checker)
@@ -415,7 +415,8 @@ gspell_enchant_checker_get_dict (GspellEnchantChecker * enchant_checker)
  * Creates a new #GspellChecker. If @language is %NULL, the default language is
  * picked with gspell_language_get_default().
  *
- * Returns: a new #GspellChecker object.
+ * Returns: (nullable) (transfer none): a new #GspellChecker object.
+ * Since: 4.0
  */
 GspellChecker *
 gspell_enchant_checker_new (const GspellLanguage *language)
