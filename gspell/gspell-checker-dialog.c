@@ -56,6 +56,8 @@ struct _GspellCheckerDialogPrivate
 	GtkWidget *add_word_button;
 	GtkTreeView *suggestions_view;
 
+	GtkLabel * header_bar_subtitle;
+
 	guint initialized : 1;
 };
 
@@ -83,16 +85,11 @@ set_spell_checker (GspellCheckerDialog *dialog,
 
 	if (g_set_object (&priv->checker, checker))
 	{
-		GtkHeaderBar *header_bar;
 		const GspellLanguage *lang;
 
-		header_bar = GTK_HEADER_BAR (gtk_dialog_get_header_bar (GTK_DIALOG (dialog)));
-
 		lang = gspell_checker_get_language (checker);
-
-		/* FIXME: set_title_widget */
-		/* gtk_header_bar_set_subtitle (header_bar, */
-		/* 			     gspell_language_get_name (lang)); */
+		gtk_label_set_label (priv->header_bar_subtitle, gspell_language_get_name (lang));
+		gtk_widget_set_visible (GTK_WIDGET(priv->header_bar_subtitle), TRUE);
 	}
 }
 
@@ -220,6 +217,8 @@ set_completed (GspellCheckerDialog *dialog)
 	priv = gspell_checker_dialog_get_instance_private (dialog);
 
 	entry_buffer = gtk_entry_get_buffer (priv->word_entry);
+
+
 
 	clear_suggestions (dialog);
 	gtk_entry_buffer_set_text (entry_buffer, "", -1);
@@ -676,6 +675,31 @@ gspell_checker_dialog_init (GspellCheckerDialog *dialog)
 
 	gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
+	GtkHeaderBar *header_bar;
+	GtkWidget * title;
+
+	header_bar = GTK_HEADER_BAR (gtk_dialog_get_header_bar (GTK_DIALOG (dialog)));
+
+	title = gtk_label_new(_("Check Spelling"));
+	gtk_label_set_single_line_mode (GTK_LABEL(title), true);
+	gtk_label_set_ellipsize (GTK_LABEL(title), PANGO_ELLIPSIZE_END);
+	gtk_label_set_width_chars (GTK_LABEL(title), 5);
+	gtk_widget_add_css_class (title, "title");
+
+	priv->header_bar_subtitle = GTK_LABEL (gtk_label_new(NULL));
+	gtk_label_set_single_line_mode (priv->header_bar_subtitle, true);
+	gtk_label_set_ellipsize (priv->header_bar_subtitle, PANGO_ELLIPSIZE_END);
+	gtk_label_set_width_chars (priv->header_bar_subtitle, 5);
+	gtk_widget_add_css_class (GTK_WIDGET (priv->header_bar_subtitle), "subtitle");
+	gtk_widget_set_visible (GTK_WIDGET (priv->header_bar_subtitle), FALSE);
+
+	GtkWidget * box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+	gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+	gtk_box_append(GTK_BOX(box), title);
+       	gtk_box_append(GTK_BOX(box), GTK_WIDGET (priv->header_bar_subtitle));
+
+	gtk_header_bar_set_title_widget (header_bar, box);
+
 	/* Connect signals */
 	g_signal_connect (priv->word_entry,
 			  "changed",
@@ -765,3 +789,4 @@ gspell_checker_dialog_get_spell_navigator (GspellCheckerDialog *dialog)
 }
 
 /* ex:set ts=8 noet: */
+

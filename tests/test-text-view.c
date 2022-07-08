@@ -60,17 +60,23 @@ checker_button_gesture_click_pressed_on ( GtkGestureClick* self,
   GtkWidget * window;
   GtkWidget * checker_dialog;
   GspellNavigator * navigator;
+  GtkWindow *parent = NULL;
 
   window = GTK_WIDGET (gtk_widget_get_root(GTK_WIDGET(spell)));
-  if (!GTK_IS_WINDOW(window))
+  if (GTK_IS_WINDOW(window))
   {
-    g_return_if_reached ();
+    parent = GTK_WINDOW (window);
   }
 
   navigator = gspell_navigator_text_view_new (spell->view);
   checker_dialog = gspell_checker_dialog_new (GTK_WINDOW (window), navigator);
 
-  gtk_widget_show (checker_dialog);
+   if (parent != NULL) {
+	gtk_window_set_modal (GTK_WINDOW (checker_dialog),
+			      gtk_window_get_modal (parent));
+  }
+
+  gtk_window_present (GTK_WINDOW ( checker_dialog ));
 }
 
 static void
@@ -122,13 +128,17 @@ get_sidebar (TestSpell *spell)
 	/* Button to launch a spell checker dialog */
 	checker_button = gtk_button_new_with_mnemonic ("_Check Spelling…");
 
-	gtk_grid_attach (GTK_GRID (sidebar), checker_button, 0, 0, 1, 1);
-
 	checker_button_gesture_click = gtk_gesture_click_new ();
 
 	g_signal_connect (G_OBJECT(checker_button_gesture_click), "pressed", G_CALLBACK(checker_button_gesture_click_pressed_on), spell);
 
+	gtk_event_controller_set_name (GTK_EVENT_CONTROLLER (checker_button_gesture_click), "checker_button_gesture_click");
+
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (checker_button_gesture_click), GTK_PHASE_CAPTURE);
+
 	gtk_widget_add_controller (checker_button, GTK_EVENT_CONTROLLER (checker_button_gesture_click));
+
+	gtk_grid_attach (GTK_GRID (sidebar), checker_button, 0, 0, 1, 1);
 
 	/* Button to launch a language dialog */
 	checker = get_spell_checker (spell);
@@ -151,7 +161,7 @@ get_sidebar (TestSpell *spell)
 				gspell_view, "inline-spell-checking",
 				G_BINDING_DEFAULT);
 
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (highlight_checkbutton), TRUE);
+	gtk_check_button_set_active (GTK_CHECK_BUTTON (highlight_checkbutton), TRUE);
 
 	/* Button to change the GtkTextBuffer */
 	change_buffer_button = gtk_button_new_with_mnemonic ("Change _Buffer!");
@@ -160,6 +170,8 @@ get_sidebar (TestSpell *spell)
 	change_buffer_gesture_click = gtk_gesture_click_new ();
 
 	g_signal_connect (G_OBJECT(change_buffer_gesture_click), "pressed", G_CALLBACK(change_buffer_button_clicked_cb), spell);
+
+	gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (change_buffer_gesture_click), GTK_PHASE_CAPTURE);
 
 	gtk_widget_add_controller (change_buffer_button, GTK_EVENT_CONTROLLER (change_buffer_gesture_click));
 
@@ -280,4 +292,5 @@ main (gint    argc,
 }
 
 /* ex:set ts=8 noet: */
+
 
