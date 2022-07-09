@@ -3,6 +3,7 @@
  *
  * Copyright 2002 - Paolo Maggi
  * Copyright 2015 - Sébastien Wilmet
+ * Copyright 2022 - otrocodigo
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +27,8 @@
 #define GSPELL_INLINE_CHECKER_TEXT_BUFFER_H
 
 #include <gtk/gtk.h>
+#include <gspell/gspell-language.h>
+#include <gspell/gspell-version.h>
 
 G_BEGIN_DECLS
 
@@ -35,6 +38,15 @@ G_GNUC_INTERNAL
 G_DECLARE_FINAL_TYPE (GspellInlineCheckerTextBuffer, _gspell_inline_checker_text_buffer,
 		      GSPELL, INLINE_CHECKER_TEXT_BUFFER,
 		      GObject)
+
+struct _GspellInlineCheckerTextBufferClass
+{
+	GObjectClass parent_class;
+
+	/* Signals */
+	void (* language_changed)	(GspellInlineCheckerTextBuffer *spell,
+					 const GspellLanguage   *language);
+};
 
 G_GNUC_INTERNAL
 GspellInlineCheckerTextBuffer *
@@ -72,6 +84,10 @@ gchar * gspell_inline_checker_get_word_at_click_position	(GspellInlineCheckerTex
 G_GNUC_INTERNAL
 GSList * gspell_inline_checker_get_suggestions			(GspellInlineCheckerTextBuffer *spell,
 						   		gchar * misspelled_word);
+
+GSPELL_AVAILABLE_IN_4_0
+void gspell_inline_checker_text_buffer_language_changed (GspellInlineCheckerTextBuffer * spell,
+							 const GspellLanguage * language);
 
 G_END_DECLS
 

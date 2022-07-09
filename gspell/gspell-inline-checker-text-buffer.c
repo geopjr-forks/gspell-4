@@ -71,6 +71,13 @@ enum
 	PROP_BUFFER,
 };
 
+enum  {
+	SIGNAL_LANGUAGE_CHANGED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = {0};
+
 typedef enum
 {
 	ADJUST_MODE_STRICTLY_INSIDE_WORD,
@@ -971,6 +978,8 @@ language_notify_cb (GspellChecker                 *checker,
 {
 	_gspell_current_word_policy_language_changed (spell->current_word_policy);
 	recheck_all (spell);
+
+	g_signal_emit (spell, signals[SIGNAL_LANGUAGE_CHANGED], 0, gspell_checker_get_language (spell->spell_checker));
 }
 
 static void
@@ -1304,6 +1313,18 @@ _gspell_inline_checker_text_buffer_class_init (GspellInlineCheckerTextBufferClas
 							      G_PARAM_READWRITE |
 							      G_PARAM_CONSTRUCT_ONLY |
 							      G_PARAM_STATIC_STRINGS));
+
+	signals[SIGNAL_LANGUAGE_CHANGED] =
+		g_signal_new ("language-changed",
+			      GSPELL_TYPE_INLINE_CHECKER_TEXT_BUFFER,
+			      G_SIGNAL_RUN_LAST,
+			      0,
+			      NULL,
+			      NULL,
+			      g_cclosure_marshal_VOID__STRING,
+			      G_TYPE_NONE,
+			      1,
+			      G_TYPE_STRING);
 }
 
 static void

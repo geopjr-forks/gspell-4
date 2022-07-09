@@ -97,6 +97,11 @@ enum {
 G_DEFINE_TYPE_WITH_PRIVATE(GspellTextView, gspell_text_view, G_TYPE_OBJECT)
 
 static void
+on_language_changed_cb (GspellInlineCheckerTextBuffer * checker,
+			const GspellLanguage * language,
+			GspellTextView * gspell_view);
+
+static void
 create_inline_checker(GspellTextView *gspell_view)
 {
 	GspellTextViewPrivate *priv;
@@ -110,6 +115,9 @@ create_inline_checker(GspellTextView *gspell_view)
 
 	buffer = gtk_text_view_get_buffer(priv->view);
 	priv->inline_checker = _gspell_inline_checker_text_buffer_new(buffer);
+
+	g_signal_connect_object (G_OBJECT(priv->inline_checker), "language-changed", G_CALLBACK(on_language_changed_cb), gspell_view, G_CONNECT_AFTER);
+
 	_gspell_inline_checker_text_buffer_attach_view(priv->inline_checker,
 						       priv->view);
 }
@@ -274,6 +282,20 @@ change_language_state(GSimpleAction *action,
 	g_simple_action_set_state(action, value);
 
 	gspell_text_view_set_language(gspell_language_lookup(code), GSPELL_TEXT_VIEW(user_data));
+}
+
+static void
+on_language_changed_cb (GspellInlineCheckerTextBuffer * checker,
+			const GspellLanguage * language,
+			GspellTextView * gspell_view)
+{
+	GAction * action;
+	GVariant * value;
+
+	action = g_action_map_lookup_action(G_ACTION_MAP(action_group), "language");
+	value = g_variant_ref_sink(g_variant_new_string(gspell_language_get_code(language)));
+	change_language_state(G_SIMPLE_ACTION(action), value, gspell_view);
+	g_variant_unref(value);
 }
 
 static void
