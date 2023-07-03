@@ -25,7 +25,7 @@
 #include "gspell-text-view.h"
 #include <glib/gi18n-lib.h>
 #include "gspell-inline-checker-text-buffer.h"
-#include "enchant/gspell-enchant-checker.h"
+#include "gspell-enchant-checker.h"
 #include "gspell-language.h"
 #include "gspell-text-buffer.h"
 #include "gspell-menu.h"

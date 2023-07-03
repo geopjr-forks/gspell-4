@@ -22,7 +22,7 @@ gspell_sources += [
   'gspell-text-view.c',
   'gspell-utils.c',
   'gspell-menu.c',
-  'enchant/gspell-enchant-checker.c',
+  'gspell-enchant-checker.c',
 ]
 
 gspell_headers = [
@@ -39,7 +39,7 @@ gspell_headers = [
   'gspell-navigator-text-view.h',
   'gspell-text-buffer.h',
   'gspell-text-view.h',
-  'enchant/gspell-enchant-checker.h'
+  'gspell-enchant-checker.h'
 ]
 
 install_headers(gspell_headers, subdir: gspell_api_path)
